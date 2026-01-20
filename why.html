@@ -164,43 +164,103 @@
         }
 
         .reward-section {
-            background: linear-gradient(135deg, var(--primary-bg) 0%, #FDF2F8 100%);
+            background: linear-gradient(135deg, #1a0a14 0%, #2d1a24 50%, #1a0d12 100%);
             border-radius: var(--radius-xl);
-            padding: 40px;
+            padding: 60px 40px;
             text-align: center;
+            margin-top: 48px;
             margin-bottom: 48px;
             border: 2px solid rgba(233, 30, 140, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .reward-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at top, rgba(233, 30, 140, 0.1) 0%, transparent 60%);
+            pointer-events: none;
         }
 
         .reward-section h2 {
-            font-size: 1.75rem;
+            font-size: 2rem;
             font-weight: 700;
-            color: var(--primary);
+            color: #fff;
             margin-bottom: 16px;
             justify-content: center;
         }
 
         .reward-section p {
-            font-size: 1rem;
-            color: var(--text-secondary);
+            font-size: 1.125rem;
+            color: rgba(255, 255, 255, 0.8);
             max-width: 600px;
             margin: 0 auto 24px;
             line-height: 1.7;
         }
 
+        .reward-section a.reward-link {
+            display: inline-block;
+            color: #FF4DA6;
+            font-weight: 600;
+            text-decoration: underline;
+            transition: color 0.3s ease;
+        }
+
+        .reward-section a.reward-link:hover {
+            color: #E91E8C;
+        }
+
         .reward-amount {
-            font-size: 3rem;
+            font-size: 3.5rem;
             font-weight: 700;
-            background: linear-gradient(135deg, #E91E8C 0%, #C4177A 100%);
+            background: linear-gradient(135deg, #E91E8C 0%, #FF4DA6 50%, #C4177A 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
+        }
+
+        .reward-highlight {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(233, 30, 140, 0.2) 0%, rgba(196, 23, 122, 0.2) 100%);
+            border: 1px solid rgba(233, 30, 140, 0.3);
+            border-radius: 50px;
+            padding: 8px 20px;
+            margin-bottom: 20px;
+            font-size: 0.9375rem;
+            color: #FF4DA6;
+            font-weight: 500;
         }
 
         .reward-note {
             font-size: 0.875rem;
-            color: var(--text-muted);
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .reward-features {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-top: 32px;
+            flex-wrap: wrap;
+        }
+
+        .reward-feature {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9375rem;
+        }
+
+        .reward-feature svg {
+            width: 20px;
+            height: 20px;
+            color: #E91E8C;
         }
 
         .faq-section {
@@ -285,9 +345,10 @@
     <main class="why-page">
         <!-- Hero Section -->
         <section class="why-hero">
-            <h1>Your Photos & Videos Help Travelers Discover Iceland</h1>
-            <p>Real experiences shared by real travelers like you create the most authentic and helpful travel guides
-                for future visitors to Iceland.</p>
+            <h1>Share Your Iceland Story, Win a Magical Night</h1>
+            <p>Your authentic travel content helps future visitors discover the real Iceland — and if your content is
+                approved, you'll receive an unforgettable reward: a one-night stay at an iconic Icelandic Bubble Hotel.
+            </p>
         </section>
 
         <!-- Video Section -->
@@ -354,11 +415,37 @@
 
         <!-- Reward Section -->
         <section class="reward-section">
-            <h2>Get Rewarded For Your Content</h2>
-            <p>As a thank you for sharing your travel memories, we offer gift certificates to contributors whose content
-                is approved and used in our platform.</p>
-            <div class="reward-amount">Up to 10.000 ISK</div>
-            <p class="reward-note">Gift certificate value depends on content quality and quantity</p>
+            <div class="reward-highlight">Exclusive Reward for Approved Content</div>
+            <h2>Win a Night in an Icelandic Bubble Hotel</h2>
+            <p>As a thank you for sharing your valuable travel content, contributors whose submissions are approved will
+                receive a gift certificate for an unforgettable one-night stay at a <a href="https://www.buubble.com/"
+                    target="_blank" class="reward-link">Bubble Hotel</a> — sleep under the stars
+                and Northern Lights!</p>
+            <div class="reward-amount">Worth 300 EUR</div>
+            <p class="reward-note">One night stay in an iconic Icelandic Bubble Hotel - Only for approved content</p>
+            <div class="reward-features">
+                <div class="reward-feature">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    <span>Transparent Bubble</span>
+                </div>
+                <div class="reward-feature">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    <span>Northern Lights Views</span>
+                </div>
+                <div class="reward-feature">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    <span>Unique Experience</span>
+                </div>
+            </div>
         </section>
 
         <!-- FAQ Section -->
@@ -382,9 +469,10 @@
             </div>
 
             <div class="faq-item">
-                <h4>How do I receive my gift certificate?</h4>
-                <p>Once your content is reviewed and approved, we'll send your gift certificate to the email address you
-                    provided when uploading. This typically takes 5-7 business days.</p>
+                <h4>How do I receive my Bubble Hotel gift certificate?</h4>
+                <p>Once your content is reviewed and approved, we'll send your Bubble Hotel gift certificate (worth
+                    €300) to the email address you provided when uploading. This typically takes 5-7 business days after
+                    approval.</p>
             </div>
 
             <div class="faq-item">
