@@ -338,7 +338,7 @@ function setupCarouselSwipe() {
 }
 
 // ===== Media Upload per Stop =====
-function handleStopMediaUpload(stopId, files) {
+async function handleStopMediaUpload(stopId, files) {
     const stop = findStopById(stopId);
     if (!stop) return;
 
@@ -358,14 +358,17 @@ function handleStopMediaUpload(stopId, files) {
         };
 
         stop.media.push(mediaItem);
-        generateThumbnail(mediaItem, file);
-        state.uploadQueue.push({ stopId, mediaId: mediaItem.id });
-    }
+        renderDays();
+        renderMobilePreview();
+        updateStats();
 
-    renderDays();
-    renderMobilePreview();
-    updateStats();
-    processUploadQueue();
+        // Wait for thumbnail to be ready before queuing upload
+        await generateThumbnail(mediaItem, file);
+
+        // Now add to queue and process
+        state.uploadQueue.push({ stopId, mediaId: mediaItem.id });
+        processUploadQueue();
+    }
 }
 
 function removeMediaFromStop(stopId, mediaId) {
@@ -402,48 +405,55 @@ function validateFile(file) {
 }
 
 function generateThumbnail(mediaItem, file) {
-    const isVideo = file.type.startsWith('video/');
+    return new Promise((resolve) => {
+        const isVideo = file.type.startsWith('video/');
 
-    if (isVideo) {
-        const video = document.createElement('video');
-        video.preload = 'metadata';
-        video.src = URL.createObjectURL(file);
-        video.onloadeddata = () => { video.currentTime = 1; };
-        video.onseeked = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = 220;
-            canvas.height = 116;
-            const ctx = canvas.getContext('2d');
-            const scale = Math.max(220 / video.videoWidth, 116 / video.videoHeight);
-            const x = (220 - video.videoWidth * scale) / 2;
-            const y = (116 - video.videoHeight * scale) / 2;
-            ctx.drawImage(video, x, y, video.videoWidth * scale, video.videoHeight * scale);
-            mediaItem.thumbnail = canvas.toDataURL('image/jpeg', 0.7);
-            URL.revokeObjectURL(video.src);
-            renderDays();
-            renderMobilePreview();
-        };
-    } else {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const img = new Image();
-            img.onload = () => {
+        if (isVideo) {
+            const video = document.createElement('video');
+            video.preload = 'metadata';
+            video.src = URL.createObjectURL(file);
+            video.onloadeddata = () => { video.currentTime = 1; };
+            video.onseeked = () => {
                 const canvas = document.createElement('canvas');
                 canvas.width = 220;
                 canvas.height = 116;
                 const ctx = canvas.getContext('2d');
-                const scale = Math.max(220 / img.width, 116 / img.height);
-                const x = (220 - img.width * scale) / 2;
-                const y = (116 - img.height * scale) / 2;
-                ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+                const scale = Math.max(220 / video.videoWidth, 116 / video.videoHeight);
+                const x = (220 - video.videoWidth * scale) / 2;
+                const y = (116 - video.videoHeight * scale) / 2;
+                ctx.drawImage(video, x, y, video.videoWidth * scale, video.videoHeight * scale);
                 mediaItem.thumbnail = canvas.toDataURL('image/jpeg', 0.7);
+                URL.revokeObjectURL(video.src);
                 renderDays();
                 renderMobilePreview();
+                resolve();
             };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    }
+            video.onerror = () => resolve(); // Still resolve even on error
+        } else {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 220;
+                    canvas.height = 116;
+                    const ctx = canvas.getContext('2d');
+                    const scale = Math.max(220 / img.width, 116 / img.height);
+                    const x = (220 - img.width * scale) / 2;
+                    const y = (116 - img.height * scale) / 2;
+                    ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+                    mediaItem.thumbnail = canvas.toDataURL('image/jpeg', 0.7);
+                    renderDays();
+                    renderMobilePreview();
+                    resolve();
+                };
+                img.onerror = () => resolve(); // Still resolve even on error
+                img.src = e.target.result;
+            };
+            reader.onerror = () => resolve(); // Still resolve even on error
+            reader.readAsDataURL(file);
+        }
+    });
 }
 
 // ===== Upload Queue Processing =====

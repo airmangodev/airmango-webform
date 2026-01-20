@@ -1578,22 +1578,51 @@ a:hover {
     margin-bottom: 16px;
 }
 
-/* Phone Frame - No bezel, just the screen like Figma */
+/* Phone Frame - Dark Slate Blue Bezel */
 .phone-frame {
     position: relative;
-    width: 375px;
-    height: 812px;
-    background: #FFFFFF;
-    border-radius: 40px;
-    overflow: hidden;
-    box-shadow: 0px 25px 50px -12px rgba(0, 0, 0, 0.25);
+    width: 340px;
+    height: 700px;
+    background: #3d4f5f;
+    border-radius: 45px;
+    padding: 10px;
+    box-shadow:
+        0 0 0 2px #2d3d4d,
+        0 25px 50px -12px rgba(0, 0, 0, 0.4),
+        inset 0 0 0 2px rgba(255, 255, 255, 0.05);
+}
+
+.phone-notch {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 22px;
+    background: #3d4f5f;
+    border-radius: 0 0 16px 16px;
+    z-index: 40;
+}
+
+.phone-notch::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 6px;
+    background: #2d3d4d;
+    border-radius: 3px;
 }
 
 .phone-screen {
     width: 100%;
     height: 100%;
-    position: relative;
+    background: #FFFFFF;
+    border-radius: 35px;
     overflow: hidden;
+    position: relative;
 }
 
 /* App Container */
@@ -1636,36 +1665,42 @@ a:hover {
     gap: 7px;
 }
 
-.status-icons .cellular,
-.status-icons .wifi {
+.status-cellular,
+.status-wifi {
     width: 17px;
     height: 12px;
     fill: #FFFFFF;
 }
 
-.battery {
+.status-battery {
+    display: flex;
+    align-items: center;
+    gap: 1px;
+}
+
+.status-battery {
     display: flex;
     align-items: center;
     gap: 1px;
 }
 
 .battery-body {
-    width: 25px;
-    height: 13px;
+    width: 22px;
+    height: 11px;
     border: 1px solid rgba(255, 255, 255, 0.35);
-    border-radius: 4.3px;
-    padding: 2px;
+    border-radius: 3px;
+    padding: 1.5px;
 }
 
 .battery-level {
     width: 100%;
     height: 100%;
     background: #FFFFFF;
-    border-radius: 2.5px;
+    border-radius: 1.5px;
 }
 
 .battery-cap {
-    width: 1.33px;
+    width: 1px;
     height: 4px;
     background: rgba(255, 255, 255, 0.4);
     border-radius: 0 1px 1px 0;
@@ -1701,11 +1736,11 @@ a:hover {
     stroke: #171717;
 }
 
-/* Cover Image - Exact Figma 250px with rounded bottom */
+/* Cover Image - Exact Figma with rounded bottom */
 .app-cover {
     position: relative;
-    width: 375px;
-    height: 250px;
+    width: 100%;
+    height: 220px;
     flex-shrink: 0;
 }
 
@@ -1717,6 +1752,36 @@ a:hover {
     background-position: center;
     box-shadow: 0px 2px 16px rgba(47, 47, 47, 0.32);
     border-radius: 0px 0px 24px 24px;
+}
+
+/* Header buttons on cover */
+.app-header-buttons {
+    position: absolute;
+    top: 48px;
+    left: 12px;
+    right: 12px;
+    display: flex;
+    justify-content: space-between;
+    z-index: 25;
+}
+
+.app-header-btn {
+    width: 32px;
+    height: 32px;
+    background: #E5E5E5;
+    border: 1px solid #E5E5E5;
+    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.app-header-btn svg {
+    width: 14px;
+    height: 14px;
+    stroke: #171717;
 }
 
 .app-cover-gradient {
@@ -1816,10 +1881,15 @@ a:hover {
 }
 
 .app-avatar {
-    width: 36px;
-    height: 36px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 10998.9px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.app-avatar svg {
+    width: 100%;
+    height: 100%;
 }
 
 .app-author-details {
@@ -2269,22 +2339,28 @@ a:hover {
     height: 24px;
 }
 
+.nav-item svg {
+    width: 22px;
+    height: 22px;
+    stroke: #525252;
+}
+
 .nav-item span {
     font-family: 'Nunito', sans-serif;
     font-weight: 400;
-    font-size: 12px;
-    line-height: 16px;
+    font-size: 10px;
+    line-height: 14px;
     text-align: center;
     color: #525252;
+}
+
+.nav-item.active svg {
+    stroke: #171717;
 }
 
 .nav-item.active span {
     font-weight: 600;
     color: #171717;
-}
-
-.nav-item svg {
-    stroke: #525252;
 }
 
 .nav-item.active svg {
