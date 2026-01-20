@@ -1,13 +1,13 @@
 /**
  * Airmango Trip Content Upload Form
- * Mobile App Preview with Swipeable Cards
+ * Exact Figma Design Implementation
  */
 
 // ===== Configuration =====
 const CONFIG = {
     uploadWebhook: 'https://n8n.restaurantreykjavik.com/webhook/media-upload',
-    maxVideoSize: 1024 * 1024 * 1024, // 1GB
-    maxImageSize: 50 * 1024 * 1024, // 50MB
+    maxVideoSize: 1024 * 1024 * 1024,
+    maxImageSize: 50 * 1024 * 1024,
     maxConcurrentUploads: 2,
     allowedImageTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/heic'],
     allowedVideoTypes: ['video/mp4', 'video/quicktime', 'video/mov']
@@ -16,12 +16,12 @@ const CONFIG = {
 // ===== State =====
 const state = {
     trip: {
-        coverImage: null, // { file, url, thumbnail }
+        coverImage: null,
         title: '',
         description: '',
         location: 'Iceland'
     },
-    days: [], // Array of day objects
+    days: [],
     dayCounter: 0,
     currentDayIndex: 0,
     activeUploads: 0,
@@ -30,7 +30,6 @@ const state = {
 
 // ===== DOM Elements =====
 const elements = {
-    // Editor elements
     daysContainer: document.getElementById('daysContainer'),
     addDayBtn: document.getElementById('addDayBtn'),
     submitBtn: document.getElementById('submitBtn'),
@@ -38,7 +37,6 @@ const elements = {
     userEmail: document.getElementById('userEmail'),
     legalConsent: document.getElementById('legalConsent'),
 
-    // Trip details
     coverUploadZone: document.getElementById('coverUploadZone'),
     coverImageInput: document.getElementById('coverImageInput'),
     coverPreview: document.getElementById('coverPreview'),
@@ -49,27 +47,23 @@ const elements = {
     tripDescription: document.getElementById('tripDescription'),
     tripLocation: document.getElementById('tripLocation'),
 
-    // App preview elements
     appCoverImage: document.getElementById('appCoverImage'),
     appLocationBadge: document.getElementById('appLocationBadge'),
     appImageCounter: document.getElementById('appImageCounter'),
     appAuthorName: document.getElementById('appAuthorName'),
     appTripTitle: document.getElementById('appTripTitle'),
     appTripDesc: document.getElementById('appTripDesc'),
-    dayNavCurrent: document.getElementById('dayNavCurrent'),
-    dayNavTotal: document.getElementById('dayNavTotal'),
+    dayNavLabel: document.getElementById('dayNavLabel'),
     dayNavTitle: document.getElementById('dayNavTitle'),
     dayPrevBtn: document.getElementById('dayPrevBtn'),
     dayNextBtn: document.getElementById('dayNextBtn'),
     stopsCarousel: document.getElementById('stopsCarousel'),
     stopsTrack: document.getElementById('stopsTrack'),
 
-    // Stats
     totalDays: document.getElementById('totalDays'),
     totalStops: document.getElementById('totalStops'),
     totalMedia: document.getElementById('totalMedia'),
 
-    // Notifications
     toastContainer: document.getElementById('toastContainer'),
     successModal: document.getElementById('successModal')
 };
@@ -83,44 +77,53 @@ function init() {
 }
 
 function setupEventListeners() {
-    // Editor events
-    elements.addDayBtn.addEventListener('click', addDay);
-    elements.submitBtn.addEventListener('click', handleSubmit);
-    elements.userName.addEventListener('input', () => {
+    elements.addDayBtn?.addEventListener('click', addDay);
+    elements.submitBtn?.addEventListener('click', handleSubmit);
+    elements.userName?.addEventListener('input', () => {
         updateMobilePreview();
         updateSubmitButton();
     });
-    elements.userEmail.addEventListener('input', updateSubmitButton);
-    elements.legalConsent.addEventListener('change', updateSubmitButton);
+    elements.userEmail?.addEventListener('input', updateSubmitButton);
+    elements.legalConsent?.addEventListener('change', updateSubmitButton);
 
-    // Trip details events
-    elements.coverUploadZone.addEventListener('click', () => elements.coverImageInput.click());
-    elements.coverImageInput.addEventListener('change', handleCoverImageSelect);
-    elements.removeCoverBtn.addEventListener('click', (e) => {
+    elements.coverUploadZone?.addEventListener('click', () => elements.coverImageInput.click());
+    elements.coverImageInput?.addEventListener('change', handleCoverImageSelect);
+    elements.removeCoverBtn?.addEventListener('click', (e) => {
         e.stopPropagation();
         removeCoverImage();
     });
-    elements.tripTitle.addEventListener('input', () => {
+    elements.tripTitle?.addEventListener('input', () => {
         state.trip.title = elements.tripTitle.value;
         updateMobilePreview();
         updateSubmitButton();
     });
-    elements.tripDescription.addEventListener('input', () => {
+    elements.tripDescription?.addEventListener('input', () => {
         state.trip.description = elements.tripDescription.value;
         updateMobilePreview();
         updateSubmitButton();
     });
-    elements.tripLocation.addEventListener('input', () => {
+    elements.tripLocation?.addEventListener('input', () => {
         state.trip.location = elements.tripLocation.value;
         updateMobilePreview();
     });
 
-    // Day navigation events
-    elements.dayPrevBtn.addEventListener('click', () => navigateDay(-1));
-    elements.dayNextBtn.addEventListener('click', () => navigateDay(1));
+    // Day navigation - these scroll through stops, not change days
+    elements.dayPrevBtn?.addEventListener('click', () => scrollStops(-1));
+    elements.dayNextBtn?.addEventListener('click', () => scrollStops(1));
 
-    // Swipe support for carousel
     setupCarouselSwipe();
+}
+
+// ===== Scroll Stops with Arrow Buttons =====
+function scrollStops(direction) {
+    const carousel = elements.stopsCarousel;
+    if (!carousel) return;
+
+    const cardWidth = 220 + 12; // card width + gap
+    carousel.scrollBy({
+        left: direction * cardWidth,
+        behavior: 'smooth'
+    });
 }
 
 // ===== Cover Image Handling =====
@@ -183,14 +186,9 @@ function removeDay(dayId) {
     if (dayIndex === -1) return;
 
     state.days.splice(dayIndex, 1);
-
-    // Renumber remaining days
-    state.days.forEach((day, index) => {
-        day.number = index + 1;
-    });
+    state.days.forEach((day, index) => { day.number = index + 1; });
     state.dayCounter = state.days.length;
 
-    // Adjust current day index
     if (state.currentDayIndex >= state.days.length) {
         state.currentDayIndex = Math.max(0, state.days.length - 1);
     }
@@ -269,15 +267,6 @@ function findStopById(stopId) {
     return null;
 }
 
-// ===== Day Navigation =====
-function navigateDay(direction) {
-    const newIndex = state.currentDayIndex + direction;
-    if (newIndex >= 0 && newIndex < state.days.length) {
-        state.currentDayIndex = newIndex;
-        renderMobilePreview();
-    }
-}
-
 // ===== Carousel Swipe Support =====
 function setupCarouselSwipe() {
     const carousel = elements.stopsCarousel;
@@ -306,18 +295,13 @@ function setupCarouselSwipe() {
         isDragging = false;
         carousel.style.cursor = 'grab';
 
-        // Check for momentum scrolling
         const endX = e.pageX - carousel.offsetLeft;
         const distance = startX - endX;
         const duration = Date.now() - startTime;
 
         if (duration < 200 && Math.abs(distance) > 50) {
-            // Quick swipe - add momentum
             const velocity = distance / duration;
-            carousel.scrollBy({
-                left: velocity * 200,
-                behavior: 'smooth'
-            });
+            carousel.scrollBy({ left: velocity * 200, behavior: 'smooth' });
         }
     });
 
@@ -329,7 +313,6 @@ function setupCarouselSwipe() {
         carousel.scrollLeft = scrollLeft - walk;
     });
 
-    // Touch support
     carousel.addEventListener('touchstart', (e) => {
         startX = e.touches[0].pageX;
         scrollLeft = carousel.scrollLeft;
@@ -338,7 +321,7 @@ function setupCarouselSwipe() {
 
     carousel.addEventListener('touchmove', (e) => {
         const x = e.touches[0].pageX;
-        const walk = (x - startX) * 1;
+        const walk = (x - startX);
         carousel.scrollLeft = scrollLeft - walk;
     }, { passive: true });
 
@@ -349,10 +332,7 @@ function setupCarouselSwipe() {
 
         if (duration < 200 && Math.abs(distance) > 30) {
             const velocity = distance / duration;
-            carousel.scrollBy({
-                left: velocity * 150,
-                behavior: 'smooth'
-            });
+            carousel.scrollBy({ left: velocity * 150, behavior: 'smooth' });
         }
     });
 }
@@ -431,12 +411,12 @@ function generateThumbnail(mediaItem, file) {
         video.onloadeddata = () => { video.currentTime = 1; };
         video.onseeked = () => {
             const canvas = document.createElement('canvas');
-            canvas.width = 160;
-            canvas.height = 160;
+            canvas.width = 220;
+            canvas.height = 116;
             const ctx = canvas.getContext('2d');
-            const scale = Math.max(160 / video.videoWidth, 160 / video.videoHeight);
-            const x = (160 - video.videoWidth * scale) / 2;
-            const y = (160 - video.videoHeight * scale) / 2;
+            const scale = Math.max(220 / video.videoWidth, 116 / video.videoHeight);
+            const x = (220 - video.videoWidth * scale) / 2;
+            const y = (116 - video.videoHeight * scale) / 2;
             ctx.drawImage(video, x, y, video.videoWidth * scale, video.videoHeight * scale);
             mediaItem.thumbnail = canvas.toDataURL('image/jpeg', 0.7);
             URL.revokeObjectURL(video.src);
@@ -449,12 +429,12 @@ function generateThumbnail(mediaItem, file) {
             const img = new Image();
             img.onload = () => {
                 const canvas = document.createElement('canvas');
-                canvas.width = 160;
-                canvas.height = 160;
+                canvas.width = 220;
+                canvas.height = 116;
                 const ctx = canvas.getContext('2d');
-                const scale = Math.max(160 / img.width, 160 / img.height);
-                const x = (160 - img.width * scale) / 2;
-                const y = (160 - img.height * scale) / 2;
+                const scale = Math.max(220 / img.width, 116 / img.height);
+                const x = (220 - img.width * scale) / 2;
+                const y = (116 - img.height * scale) / 2;
                 ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
                 mediaItem.thumbnail = canvas.toDataURL('image/jpeg', 0.7);
                 renderDays();
@@ -530,7 +510,6 @@ function renderDays() {
 
     elements.daysContainer.innerHTML = state.days.map(day => createDayHtml(day)).join('');
 
-    // Setup file inputs for each stop
     state.days.forEach(day => {
         day.stops.forEach(stop => {
             const fileInput = document.getElementById(`media-input-${stop.id}`);
@@ -570,15 +549,9 @@ function createDayHtml(day) {
                     ${day.stops.map(stop => createStopHtml(stop)).join('')}
                 </div>
                 <div class="add-stop-buttons">
-                    <button type="button" class="btn btn-outline btn-sm" onclick="addStop('${day.id}', 'activity')">
-                        + Activity
-                    </button>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="addStop('${day.id}', 'attraction')">
-                        + Attraction
-                    </button>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="addStop('${day.id}', 'accommodation')">
-                        + Accommodation
-                    </button>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="addStop('${day.id}', 'activity')">+ Activity</button>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="addStop('${day.id}', 'attraction')">+ Attraction</button>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="addStop('${day.id}', 'accommodation')">+ Accommodation</button>
                 </div>
             </div>
         </div>
@@ -586,11 +559,7 @@ function createDayHtml(day) {
 }
 
 function createStopHtml(stop) {
-    const typeLabels = {
-        activity: 'Activity',
-        attraction: 'Attraction',
-        accommodation: 'Accommodation'
-    };
+    const typeLabels = { activity: 'Activity', attraction: 'Attraction', accommodation: 'Accommodation' };
 
     return `
         <div class="stop-card ${stop.type}" data-stop-id="${stop.id}">
@@ -607,18 +576,14 @@ function createStopHtml(stop) {
             <div class="stop-form">
                 <div class="stop-form-group">
                     <label>Title <span class="required">*</span></label>
-                    <input type="text" 
-                        placeholder="Enter ${typeLabels[stop.type].toLowerCase()} name"
+                    <input type="text" placeholder="Enter ${typeLabels[stop.type].toLowerCase()} name"
                         value="${escapeHtml(stop.title)}"
-                        onchange="updateStopTitle('${stop.id}', this.value)"
-                        required>
+                        onchange="updateStopTitle('${stop.id}', this.value)" required>
                 </div>
                 <div class="stop-form-group">
                     <label>Description <span class="required">*</span></label>
-                    <textarea 
-                        placeholder="Describe this ${typeLabels[stop.type].toLowerCase()}..."
-                        onchange="updateStopDescription('${stop.id}', this.value)"
-                        required>${escapeHtml(stop.description)}</textarea>
+                    <textarea placeholder="Describe this ${typeLabels[stop.type].toLowerCase()}..."
+                        onchange="updateStopDescription('${stop.id}', this.value)" required>${escapeHtml(stop.description)}</textarea>
                 </div>
                 <div class="stop-media-section">
                     <label class="stop-media-upload" onclick="document.getElementById('media-input-${stop.id}').click()">
@@ -627,8 +592,7 @@ function createStopHtml(stop) {
                         </svg>
                         <span>Add Photos/Videos</span>
                         <input type="file" id="media-input-${stop.id}" multiple 
-                            accept="image/jpeg,image/jpg,image/png,image/heic,video/mp4,video/quicktime,video/mov" 
-                            hidden>
+                            accept="image/jpeg,image/jpg,image/png,image/heic,video/mp4,video/quicktime,video/mov" hidden>
                     </label>
                     ${stop.media.length > 0 ? `
                         <div class="stop-media-grid">
@@ -655,70 +619,103 @@ function renderMobilePreview() {
 
 function updateMobilePreview() {
     // Update cover image
-    if (state.trip.coverImage) {
-        elements.appCoverImage.style.backgroundImage = `linear-gradient(180deg, rgba(0,0,0,0.2) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.3) 100%), url('${state.trip.coverImage.url}')`;
-        elements.appCoverImage.innerHTML = '';
-    } else {
-        elements.appCoverImage.style.backgroundImage = 'linear-gradient(180deg, rgba(0,0,0,0.2) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.3) 100%), linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-        elements.appCoverImage.innerHTML = `
-            <div class="cover-placeholder-app">
-                <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1">
-                    <rect x="3" y="3" width="18" height="18" rx="2"/>
-                    <circle cx="8.5" cy="8.5" r="1.5"/>
-                    <path d="M21 15l-5-5L5 21"/>
-                </svg>
-                <span>Add cover image</span>
-            </div>
-        `;
+    const coverImageEl = elements.appCoverImage;
+    if (coverImageEl) {
+        if (state.trip.coverImage) {
+            coverImageEl.style.backgroundImage = `url('${state.trip.coverImage.url}')`;
+            coverImageEl.innerHTML = '';
+        } else {
+            coverImageEl.style.backgroundImage = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            coverImageEl.innerHTML = `
+                <div class="cover-placeholder-app">
+                    <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <path d="M21 15l-5-5L5 21"/>
+                    </svg>
+                    <span>Add cover image</span>
+                </div>
+            `;
+        }
     }
 
     // Update location badge
-    elements.appLocationBadge.textContent = state.trip.location || 'Location';
+    if (elements.appLocationBadge) {
+        const span = elements.appLocationBadge.querySelector('span');
+        if (span) span.textContent = state.trip.location || 'Iceland';
+    }
 
     // Count total media
     let totalMedia = state.trip.coverImage ? 1 : 0;
     state.days.forEach(day => {
-        day.stops.forEach(stop => {
-            totalMedia += stop.media.length;
-        });
+        day.stops.forEach(stop => { totalMedia += stop.media.length; });
     });
-    elements.appImageCounter.textContent = `1/${totalMedia || 1}`;
+    if (elements.appImageCounter) {
+        elements.appImageCounter.textContent = `1/${totalMedia || 1}`;
+    }
 
     // Update author name
-    elements.appAuthorName.textContent = elements.userName.value || 'Your Name';
+    if (elements.appAuthorName) {
+        elements.appAuthorName.textContent = elements.userName?.value || 'Your Name';
+    }
 
     // Update trip title
-    elements.appTripTitle.textContent = state.trip.title || 'Your Trip Title';
+    if (elements.appTripTitle) {
+        elements.appTripTitle.textContent = state.trip.title || 'South Iceland Highlights';
+    }
 
     // Update trip description
-    elements.appTripDesc.textContent = state.trip.description || 'Your trip description will appear here...';
+    if (elements.appTripDesc) {
+        elements.appTripDesc.textContent = state.trip.description || 'Discover the most iconic landscapes of South Iceland — from moss-covered canyons and black-sand beaches to powerful waterfalls and dramatic cliffs sha...';
+    }
 }
 
 function updateDayNavigation() {
     const totalDays = state.days.length;
 
     if (totalDays === 0) {
-        elements.dayNavCurrent.textContent = 'Day 1';
-        elements.dayNavTotal.textContent = 'of 1:';
-        elements.dayNavTitle.textContent = 'Add a day to get started';
-        elements.dayPrevBtn.disabled = true;
-        elements.dayNextBtn.disabled = true;
+        if (elements.dayNavLabel) elements.dayNavLabel.textContent = 'Day 1 of 1:';
+        if (elements.dayNavTitle) elements.dayNavTitle.textContent = 'South Coast Discovery';
+        if (elements.dayPrevBtn) elements.dayPrevBtn.disabled = true;
+        if (elements.dayNextBtn) elements.dayNextBtn.disabled = true;
         return;
     }
 
     const currentDay = state.days[state.currentDayIndex];
-    elements.dayNavCurrent.textContent = `Day ${currentDay.number}`;
-    elements.dayNavTotal.textContent = `of ${totalDays}:`;
-    elements.dayNavTitle.textContent = currentDay.title || 'No title';
+    if (elements.dayNavLabel) elements.dayNavLabel.textContent = `Day ${currentDay.number} of ${totalDays}:`;
+    if (elements.dayNavTitle) elements.dayNavTitle.textContent = currentDay.title || 'No title';
 
-    elements.dayPrevBtn.disabled = state.currentDayIndex === 0;
-    elements.dayNextBtn.disabled = state.currentDayIndex === totalDays - 1;
+    // Enable/disable based on scroll position and number of stops
+    const hasStops = state.days.some(d => d.stops.length > 0);
+    if (elements.dayPrevBtn) elements.dayPrevBtn.disabled = !hasStops;
+    if (elements.dayNextBtn) elements.dayNextBtn.disabled = !hasStops;
 }
 
 function renderStopCards() {
     if (!elements.stopsTrack) return;
 
-    if (state.days.length === 0) {
+    // Collect all stops across all days
+    let allStops = [];
+    let stopNumber = 1;
+
+    state.days.forEach((day, dayIndex) => {
+        // Add day divider before each day except the first
+        if (dayIndex > 0 && day.stops.length > 0) {
+            allStops.push({ type: 'divider', dayNumber: day.number });
+        }
+
+        day.stops.forEach((stop, stopIndex) => {
+            allStops.push({
+                type: 'stop',
+                stop: stop,
+                stopNumber: stopNumber,
+                isTapped: stopIndex === 0 && dayIndex === 0 // Mark first stop as tapped
+            });
+            stopNumber++;
+        });
+    });
+
+    if (allStops.length === 0) {
         elements.stopsTrack.innerHTML = `
             <div class="stop-card-empty">
                 <p>Add stops to your days to see them here</p>
@@ -727,58 +724,33 @@ function renderStopCards() {
         return;
     }
 
-    // Get all stops from current day and beyond (for scrolling view)
-    let cardsHtml = '';
-    let stopNumber = 1;
-
-    state.days.forEach((day, dayIndex) => {
-        // Add day divider for days after the first visible one
-        if (dayIndex > state.currentDayIndex && day.stops.length > 0) {
-            cardsHtml += `
+    elements.stopsTrack.innerHTML = allStops.map(item => {
+        if (item.type === 'divider') {
+            return `
                 <div class="app-day-divider">
-                    <div class="day-divider-content">
-                        <div class="day-divider-label">Day</div>
-                        <div class="day-divider-number">${day.number}</div>
-                    </div>
+                    <span>Day ${item.dayNumber}</span>
                 </div>
             `;
         }
 
-        // Only show stops from current day onwards
-        if (dayIndex >= state.currentDayIndex) {
-            day.stops.forEach((stop, stopIndex) => {
-                const coverImage = stop.media.length > 0 && stop.media[0].thumbnail
-                    ? stop.media[0].thumbnail
-                    : null;
+        const stop = item.stop;
+        const coverImage = stop.media.length > 0 && stop.media[0].thumbnail
+            ? stop.media[0].thumbnail
+            : null;
 
-                const isTapped = stopIndex === 1 && dayIndex === state.currentDayIndex;
-
-                cardsHtml += `
-                    <div class="app-stop-card ${isTapped ? 'tapped' : ''}">
-                        <div class="stop-card-image" style="${coverImage ? `background-image: url('${coverImage}')` : ''}">
-                            <span class="stop-card-badge">Stop ${stopNumber}</span>
-                            ${isTapped ? '<span class="stop-card-tapped-badge">Tapped</span>' : ''}
-                        </div>
-                        <div class="stop-card-content">
-                            <div class="stop-card-title">${escapeHtml(stop.title) || 'Untitled'}</div>
-                            <div class="stop-card-desc">${escapeHtml(stop.description) || 'No description'}</div>
-                        </div>
-                    </div>
-                `;
-                stopNumber++;
-            });
-        }
-    });
-
-    if (!cardsHtml) {
-        cardsHtml = `
-            <div class="stop-card-empty">
-                <p>Add stops to this day to see them here</p>
+        return `
+            <div class="app-stop-card ${item.isTapped ? 'tapped' : ''}">
+                <div class="stop-card-image" style="${coverImage ? `background-image: url('${coverImage}')` : ''}">
+                    <span class="stop-card-badge">Stop ${item.stopNumber}</span>
+                    ${item.isTapped ? '<span class="stop-card-tapped-badge">Tapped in Feed</span>' : ''}
+                </div>
+                <div class="stop-card-content">
+                    <div class="stop-card-title">${escapeHtml(stop.title) || 'Untitled'}</div>
+                    <div class="stop-card-desc">${escapeHtml(stop.description) || 'No description'}</div>
+                </div>
             </div>
         `;
-    }
-
-    elements.stopsTrack.innerHTML = cardsHtml;
+    }).join('');
 }
 
 // ===== Stats & Validation =====
@@ -789,9 +761,7 @@ function updateStats() {
 
     state.days.forEach(day => {
         totalStops += day.stops.length;
-        day.stops.forEach(stop => {
-            totalMedia += stop.media.length;
-        });
+        day.stops.forEach(stop => { totalMedia += stop.media.length; });
     });
 
     if (elements.totalDays) elements.totalDays.textContent = totalDays;
@@ -801,9 +771,7 @@ function updateStats() {
 
 function updateSubmitButton() {
     const isValid = validateForm();
-    if (elements.submitBtn) {
-        elements.submitBtn.disabled = !isValid;
-    }
+    if (elements.submitBtn) elements.submitBtn.disabled = !isValid;
 }
 
 function validateForm() {
@@ -813,26 +781,18 @@ function validateForm() {
 
     if (!userName || !userEmail || !legalConsent) return false;
     if (!isValidEmail(userEmail)) return false;
-
-    // Must have cover image and trip details
     if (!state.trip.coverImage) return false;
     if (!state.trip.title.trim()) return false;
     if (!state.trip.description.trim()) return false;
-
-    // Must have at least one day
     if (state.days.length === 0) return false;
 
-    // Check all days have titles
     for (const day of state.days) {
         if (!day.title.trim()) return false;
-
-        // Check all stops have title and description
         for (const stop of day.stops) {
             if (!stop.title.trim() || !stop.description.trim()) return false;
         }
     }
 
-    // Check no uploads in progress
     if (state.activeUploads > 0) return false;
 
     return true;
@@ -850,8 +810,8 @@ async function handleSubmit() {
     const btnLoader = submitBtn.querySelector('.btn-loader');
 
     submitBtn.disabled = true;
-    btnText.hidden = true;
-    btnLoader.hidden = false;
+    if (btnText) btnText.hidden = true;
+    if (btnLoader) btnLoader.hidden = false;
 
     try {
         const payload = buildSubmissionPayload();
@@ -864,14 +824,14 @@ async function handleSubmit() {
 
         if (!response.ok) throw new Error('Submission failed');
 
-        elements.successModal.hidden = false;
+        if (elements.successModal) elements.successModal.hidden = false;
     } catch (error) {
         console.error('Submit error:', error);
         showToast('Submission failed. Please try again.', 'error');
         submitBtn.disabled = false;
     } finally {
-        btnText.hidden = false;
-        btnLoader.hidden = true;
+        if (btnText) btnText.hidden = false;
+        if (btnLoader) btnLoader.hidden = true;
     }
 }
 
@@ -915,7 +875,7 @@ function showToast(message, type = 'success') {
         <span class="toast-message">${message}</span>
     `;
 
-    elements.toastContainer.appendChild(toast);
+    elements.toastContainer?.appendChild(toast);
 
     setTimeout(() => {
         toast.classList.add('toast-fade-out');

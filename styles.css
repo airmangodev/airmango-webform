@@ -1561,7 +1561,7 @@ a:hover {
     font-style: italic;
 }
 
-/* ===== Phone Frame & App Preview ===== */
+/* ===== EXACT FIGMA PHONE PREVIEW ===== */
 
 .preview-panel-content {
     display: flex;
@@ -1578,52 +1578,22 @@ a:hover {
     margin-bottom: 16px;
 }
 
-/* Phone Frame - Dark Slate Blue like reference */
+/* Phone Frame - No bezel, just the screen like Figma */
 .phone-frame {
     position: relative;
-    width: 320px;
-    height: 660px;
-    background: #3d4f5f;
-    border-radius: 45px;
-    padding: 12px;
-    box-shadow:
-        0 0 0 2px #2d3d4d,
-        0 25px 50px -12px rgba(0, 0, 0, 0.4),
-        inset 0 0 0 2px rgba(255, 255, 255, 0.05);
-}
-
-.phone-frame::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 120px;
-    height: 25px;
-    background: #3d4f5f;
-    border-radius: 0 0 20px 20px;
-    z-index: 10;
-}
-
-.phone-notch {
-    position: absolute;
-    top: 12px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80px;
-    height: 22px;
-    background: #2d3d4d;
-    border-radius: 0 0 15px 15px;
-    z-index: 11;
+    width: 375px;
+    height: 812px;
+    background: #FFFFFF;
+    border-radius: 40px;
+    overflow: hidden;
+    box-shadow: 0px 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
 
 .phone-screen {
     width: 100%;
     height: 100%;
-    background: #fff;
-    border-radius: 35px;
-    overflow: hidden;
     position: relative;
+    overflow: hidden;
 }
 
 /* App Container */
@@ -1632,37 +1602,822 @@ a:hover {
     height: 100%;
     display: flex;
     flex-direction: column;
-    background: #fff;
-    overflow-y: auto;
-    overflow-x: hidden;
+    background: #FFFFFF;
+    font-family: 'Nunito', sans-serif;
     position: relative;
+    overflow: hidden;
 }
 
-.app-container::-webkit-scrollbar {
-    display: none;
-}
-
-/* Status Bar */
+/* Status Bar - Exact Figma */
 .app-status-bar {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 28px;
+    height: 50px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 20px;
-    font-size: 11px;
-    font-weight: 600;
-    color: #fff;
-    z-index: 20;
-    background: transparent;
+    padding: 21px 16px 0;
+    z-index: 30;
 }
 
 .status-time {
-    font-weight: 600;
+    font-family: 'SF Pro', -apple-system, sans-serif;
+    font-weight: 590;
+    font-size: 17px;
+    line-height: 22px;
+    color: #FFFFFF;
 }
+
+.status-icons {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.status-icons .cellular,
+.status-icons .wifi {
+    width: 17px;
+    height: 12px;
+    fill: #FFFFFF;
+}
+
+.battery {
+    display: flex;
+    align-items: center;
+    gap: 1px;
+}
+
+.battery-body {
+    width: 25px;
+    height: 13px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 4.3px;
+    padding: 2px;
+}
+
+.battery-level {
+    width: 100%;
+    height: 100%;
+    background: #FFFFFF;
+    border-radius: 2.5px;
+}
+
+.battery-cap {
+    width: 1.33px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 0 1px 1px 0;
+}
+
+/* Header Buttons - Exact Figma */
+.app-header-buttons {
+    position: absolute;
+    top: 56px;
+    left: 16px;
+    right: 16px;
+    display: flex;
+    justify-content: space-between;
+    z-index: 25;
+}
+
+.app-header-btn {
+    width: 36px;
+    height: 36px;
+    background: #E5E5E5;
+    border: 1px solid #E5E5E5;
+    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.app-header-btn svg {
+    width: 16px;
+    height: 16px;
+    stroke: #171717;
+}
+
+/* Cover Image - Exact Figma 250px with rounded bottom */
+.app-cover {
+    position: relative;
+    width: 375px;
+    height: 250px;
+    flex-shrink: 0;
+}
+
+.app-cover-image {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-size: cover;
+    background-position: center;
+    box-shadow: 0px 2px 16px rgba(47, 47, 47, 0.32);
+    border-radius: 0px 0px 24px 24px;
+}
+
+.app-cover-gradient {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 375px;
+    height: 161px;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 100%);
+    pointer-events: none;
+}
+
+.cover-placeholder-app {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.7);
+    gap: 8px;
+    border-radius: 0px 0px 24px 24px;
+}
+
+.cover-placeholder-app span {
+    font-size: 12px;
+    font-weight: 400;
+}
+
+/* Cover Badges - Exact Figma */
+.app-cover-badges {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.app-location-badge {
+    display: flex;
+    align-items: center;
+    padding: 4px 12px 4px 6px;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 999px;
+}
+
+.flag-icon {
+    width: 16px;
+    height: 16px;
+    border-radius: 2px;
+}
+
+.app-location-badge span {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 16px;
+    color: #171717;
+}
+
+.app-image-counter {
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 999px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 16px;
+    color: #171717;
+}
+
+/* Trip Info Section - Exact Figma */
+.app-trip-info {
+    padding: 0 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.app-author-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0;
+    gap: 8px;
+    height: 36px;
+    margin-top: 12px;
+}
+
+.app-author-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.app-avatar {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10998.9px;
+}
+
+.app-author-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.author-label {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 16px;
+    color: #525252;
+}
+
+.author-name {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 20px;
+    color: #171717;
+}
+
+.app-follow-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    gap: 8px;
+    background: #FFFFFF;
+    border: 1px solid #E5E5E5;
+    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.app-follow-btn svg {
+    width: 16px;
+    height: 16px;
+    stroke: #171717;
+}
+
+.app-follow-btn span {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 16px;
+    color: #171717;
+}
+
+/* Trip Details */
+.app-trip-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.app-trip-title {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 28px;
+    color: #171717;
+    margin: 0;
+}
+
+.app-trip-desc-wrapper {
+    position: relative;
+}
+
+.app-trip-desc {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 20px;
+    color: #525252;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.app-more-btn {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    background: #FFFFFF;
+    border: none;
+    padding: 8px 12px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 20px;
+    color: #262626;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+/* Action Buttons - Exact Figma */
+.app-action-buttons {
+    display: flex;
+    gap: 8px;
+    padding: 12px 0 0;
+}
+
+.app-action-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 16px;
+    height: 40px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.app-action-map {
+    background: #E5E5E5;
+    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.app-action-map svg {
+    width: 20px;
+    height: 20px;
+    stroke: #171717;
+}
+
+.app-action-map span {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 20px;
+    color: #171717;
+}
+
+.app-action-collection {
+    background: linear-gradient(270deg, #BB0158 0%, #AA0050 0%, #D60366 100%);
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.app-action-collection svg {
+    width: 20px;
+    height: 20px;
+    stroke: #FAFAFA;
+}
+
+.app-action-collection span {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 20px;
+    color: #FAFAFA;
+}
+
+/* Day Navigation - Exact Figma */
+.app-day-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 12px 0;
+    gap: 12px;
+}
+
+.day-nav-info {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+    overflow: hidden;
+}
+
+.day-nav-label {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 20px;
+    color: #171717;
+    white-space: nowrap;
+}
+
+.day-nav-title {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 20px;
+    color: #171717;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.day-nav-arrows {
+    display: flex;
+    gap: 8px;
+}
+
+.day-nav-arrow {
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.day-nav-arrow svg {
+    width: 16px;
+    height: 16px;
+    stroke: #171717;
+}
+
+.day-nav-arrow:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Stops Section */
+.app-stops-section {
+    flex: 1;
+    padding: 12px 0 0 12px;
+    overflow: hidden;
+}
+
+/* Stop Cards Carousel - Exact Figma */
+.app-stops-carousel {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    padding-bottom: 12px;
+}
+
+.app-stops-carousel::-webkit-scrollbar {
+    display: none;
+}
+
+.stops-track {
+    display: flex;
+    gap: 12px;
+    padding-right: 12px;
+}
+
+.stop-card-empty {
+    min-width: 220px;
+    height: 176px;
+    background: #FFFFFF;
+    border: 1px solid #E5E5E5;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 12px;
+    color: #525252;
+}
+
+/* Individual Stop Card - Exact Figma 220x176 */
+.app-stop-card {
+    min-width: 220px;
+    width: 220px;
+    height: 176px;
+    background: #FFFFFF;
+    border: 1px solid #E5E5E5;
+    box-shadow: 0px 2px 16px rgba(47, 47, 47, 0.12);
+    border-radius: 16px;
+    overflow: hidden;
+    scroll-snap-align: start;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Stop card with tapped state - no border, just shadow */
+.app-stop-card.tapped {
+    border: none;
+    box-shadow: 0px 2px 16px rgba(47, 47, 47, 0.32);
+}
+
+/* Stop Card Image - Exact Figma 116px */
+.stop-card-image {
+    width: 220px;
+    height: 116px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-size: cover;
+    background-position: center;
+    border-radius: 16px 16px 0 0;
+    border: 1px solid #E5E5E5;
+    border-bottom: none;
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 12px;
+}
+
+.app-stop-card.tapped .stop-card-image {
+    border: none;
+    padding: 0;
+    justify-content: space-between;
+}
+
+/* Stop Badge - Exact Figma */
+.stop-card-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 999px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 16px;
+    color: #171717;
+}
+
+.app-stop-card.tapped .stop-card-badge {
+    margin: 12px 0 0 12px;
+}
+
+/* Tapped Badge - Exact Figma pink gradient */
+.stop-card-tapped-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    background: linear-gradient(270deg, #BB0158 0%, #AA0050 0%, #D60366 100%);
+    border-radius: 0px 0px 0px 12px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 16px;
+    color: #FFFFFF;
+    align-self: flex-start;
+}
+
+/* Stop Card Content - Exact Figma 60px */
+.stop-card-content {
+    width: 220px;
+    height: 60px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border: 1px solid #E5E5E5;
+    border-top: none;
+    border-radius: 0 0 16px 16px;
+    box-sizing: border-box;
+}
+
+.app-stop-card.tapped .stop-card-content {
+    border: none;
+}
+
+.stop-card-title {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    line-height: 16px;
+    color: #171717;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.stop-card-desc {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 16px;
+    color: #525252;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Day Divider - Exact Figma */
+.app-day-divider {
+    min-width: 56px;
+    width: 56px;
+    height: 56px;
+    background: #FFFFFF;
+    border: 1px solid #E5E5E5;
+    box-shadow: 0px 2px 16px rgba(47, 47, 47, 0.12);
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+    align-self: center;
+}
+
+.app-day-divider span {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 20px;
+    color: #171717;
+}
+
+/* Bottom Navigation - Exact Figma */
+.app-bottom-nav {
+    display: flex;
+    align-items: center;
+    padding: 6px 16px 0;
+    gap: 16px;
+    height: 54px;
+    border-top: 1px solid #E5E5E5;
+    box-shadow: inset 0px 1px 4px rgba(0, 0, 0, 0.04);
+    background: #FFFFFF;
+    flex-shrink: 0;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+    cursor: pointer;
+}
+
+.nav-icon-wrapper {
+    width: 28px;
+    height: 28px;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-icon-wrapper svg {
+    width: 24px;
+    height: 24px;
+}
+
+.nav-item span {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 16px;
+    text-align: center;
+    color: #525252;
+}
+
+.nav-item.active span {
+    font-weight: 600;
+    color: #171717;
+}
+
+.nav-item svg {
+    stroke: #525252;
+}
+
+.nav-item.active svg {
+    stroke: #171717;
+}
+
+/* Home Indicator - Exact Figma */
+.app-home-indicator {
+    width: 144px;
+    height: 5px;
+    background: #171717;
+    border-radius: 100px;
+    margin: 8px auto;
+    flex-shrink: 0;
+}
+
+/* Cover Upload Zone */
+.cover-upload-zone {
+    width: 100%;
+    height: 140px;
+    border: 2px dashed var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    overflow: hidden;
+    transition: all var(--transition-fast);
+    position: relative;
+}
+
+.cover-upload-zone:hover {
+    border-color: var(--primary);
+    background: var(--primary-bg);
+}
+
+.cover-upload-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--text-muted);
+}
+
+.cover-upload-placeholder svg {
+    width: 32px;
+    height: 32px;
+}
+
+.cover-upload-placeholder span {
+    font-size: 0.875rem;
+}
+
+.cover-preview {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.cover-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.cover-remove-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Trip Details Section */
+.trip-details-section {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+}
+
+.trip-details-section textarea {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 0.9375rem;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: inherit;
+    resize: vertical;
+    min-height: 80px;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.trip-details-section textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-bg);
+}
+
+.trip-details-section textarea::placeholder {
+    color: var(--text-muted);
+}
+
+/* Responsive */
+@media (max-width: 1400px) {
+    .phone-frame {
+        width: 320px;
+        height: 693px;
+        transform: scale(0.95);
+        transform-origin: top center;
+    }
+}
+
+@media (max-width: 1200px) {
+    .split-layout {
+        grid-template-columns: 1fr !important;
+    }
+
+    .preview-panel {
+        display: none;
+    }
+}
+
 
 .status-icons {
     display: flex;
