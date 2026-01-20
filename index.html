@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Your Trip - Airmango</title>
+    <meta name="description"
+        content="Share your travel memories with Airmango. Upload photos and videos from your trip and organize them by days and stops.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="index.html" class="logo">
+                <img src="assets/images/Logo.png" alt="Airmango" class="logo-icon">
+                <span class="logo-text">Airmango</span>
+            </a>
+            <h1 class="header-title">Upload Your Trip Media</h1>
+            <a href="why.html" class="header-link">Why we use your content?</a>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-container">
+        <!-- Left Panel - Upload Section -->
+        <aside class="left-panel">
+            <div class="panel-content">
+                <!-- User Info Section -->
+                <section class="user-info-section">
+                    <h2 class="section-title">Your Information</h2>
+                    <div class="form-group">
+                        <label for="userName">Full Name <span class="required">*</span></label>
+                        <input type="text" id="userName" placeholder="Enter your full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="userEmail">Email Address <span class="required">*</span></label>
+                        <input type="email" id="userEmail" placeholder="your@email.com" required>
+                    </div>
+                </section>
+
+                <!-- Upload Section -->
+                <section class="upload-section">
+                    <h2 class="section-title">Upload Media</h2>
+                    <div class="upload-zone" id="uploadZone">
+                        <input type="file" id="fileInput" multiple
+                            accept="image/jpeg,image/jpg,image/png,image/heic,video/mp4,video/quicktime,video/mov"
+                            hidden>
+                        <div class="upload-icon">
+                            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M32 8L32 40M32 8L20 20M32 8L44 20" stroke="currentColor" stroke-width="3"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M8 44V52C8 54.2091 9.79086 56 12 56H52C54.2091 56 56 54.2091 56 52V44"
+                                    stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+                            </svg>
+                        </div>
+                        <p class="upload-text">Drag & drop files here</p>
+                        <p class="upload-subtext">or click to browse</p>
+                        <p class="upload-hint">JPG, PNG, HEIC, MP4, MOV • Max 1GB per video</p>
+                    </div>
+
+                    <!-- Upload Progress -->
+                    <div class="upload-progress" id="uploadProgress" hidden>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <p class="progress-text" id="progressText">Uploading...</p>
+                    </div>
+
+                    <!-- Uploaded Files List -->
+                    <div class="uploaded-files" id="uploadedFiles">
+                        <h3 class="files-title">
+                            <span>Uploaded Files</span>
+                            <span class="files-count" id="filesCount">0</span>
+                        </h3>
+                        <p class="files-hint">Drag files to organize them by day and stop →</p>
+                        <div class="files-list" id="filesList">
+                            <!-- Files will be added here dynamically -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Legal Consent -->
+                <section class="consent-section">
+                    <div class="consent-summary">
+                        <h3>Agreement Summary</h3>
+                        <ul>
+                            <li>You must <strong>own all rights</strong> to the content</li>
+                            <li>You grant Airmango a <strong>non-exclusive, worldwide license</strong> to use your
+                                content</li>
+                            <li>Gift certificates are only issued if content is <span class="highlight">approved</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <label class="consent-checkbox">
+                        <input type="checkbox" id="legalConsent">
+                        <span class="checkmark"></span>
+                        <span class="consent-text">
+                            I confirm I am 18+, own all rights to this content, and agree to the
+                            <a href="https://buubble.com/trip-agreement" target="_blank">Terms & Agreement</a>
+                        </span>
+                    </label>
+                </section>
+            </div>
+        </aside>
+
+        <!-- Right Panel - Organization Section -->
+        <section class="right-panel">
+            <div class="panel-content">
+                <div class="organization-header">
+                    <h2 class="section-title">Organize Your Trip</h2>
+                    <button type="button" class="btn btn-primary" id="addDayBtn">
+                        <svg viewBox="0 0 20 20" fill="none">
+                            <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                        Add Day
+                    </button>
+                </div>
+
+                <p class="organization-hint">Create days and stops, then drag your uploaded media into each section</p>
+
+                <!-- Days Container -->
+                <div class="days-container" id="daysContainer">
+                    <!-- Days will be added here dynamically -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Submit Section -->
+    <footer class="submit-section">
+        <div class="submit-content">
+            <div class="submit-info">
+                <p class="submit-stats" id="submitStats">
+                    <span id="totalFiles">0</span> files uploaded • <span id="assignedFiles">0</span> assigned to stops
+                </p>
+            </div>
+            <button type="button" class="btn btn-submit" id="submitBtn" disabled>
+                <span class="btn-text">Submit Trip Content</span>
+                <span class="btn-loader" hidden>
+                    <svg class="spinner" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none"
+                            stroke-dasharray="31.4 31.4" stroke-linecap="round" />
+                    </svg>
+                </span>
+            </button>
+        </div>
+    </footer>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Success Modal -->
+    <div class="modal" id="successModal" hidden>
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="success-icon">
+                <svg viewBox="0 0 64 64" fill="none">
+                    <circle cx="32" cy="32" r="30" stroke="#10B981" stroke-width="3" />
+                    <path d="M20 32L28 40L44 24" stroke="#10B981" stroke-width="3" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+            </div>
+            <h2>Upload Complete!</h2>
+            <p>Your media has been submitted successfully. You'll receive a confirmation email shortly.</p>
+            <button type="button" class="btn btn-primary" onclick="location.reload()">Upload Another Trip</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
