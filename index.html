@@ -21,15 +21,15 @@
                 <img src="assets/images/Logo.png" alt="Airmango" class="logo-icon">
                 <span class="logo-text">Airmango</span>
             </a>
-            <h1 class="header-title">Upload Your Trip Media</h1>
+            <h1 class="header-title">Upload Your Trip Content</h1>
             <a href="why.html" class="header-link">Why we use your content?</a>
         </div>
     </header>
 
-    <!-- Main Container -->
-    <main class="main-container">
-        <!-- Left Panel - Upload Section -->
-        <aside class="left-panel">
+    <!-- Main Container - 50/50 Split -->
+    <main class="main-container split-layout">
+        <!-- Left Panel - Editor -->
+        <aside class="left-panel editor-panel">
             <div class="panel-content">
                 <!-- User Info Section -->
                 <section class="user-info-section">
@@ -44,44 +44,25 @@
                     </div>
                 </section>
 
-                <!-- Upload Section -->
-                <section class="upload-section">
-                    <h2 class="section-title">Upload Media</h2>
-                    <div class="upload-zone" id="uploadZone">
-                        <input type="file" id="fileInput" multiple
-                            accept="image/jpeg,image/jpg,image/png,image/heic,video/mp4,video/quicktime,video/mov"
-                            hidden>
-                        <div class="upload-icon">
-                            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M32 8L32 40M32 8L20 20M32 8L44 20" stroke="currentColor" stroke-width="3"
-                                    stroke-linecap="round" stroke-linejoin="round" />
-                                <path d="M8 44V52C8 54.2091 9.79086 56 12 56H52C54.2091 56 56 54.2091 56 52V44"
-                                    stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+                <!-- Trip Organization Section -->
+                <section class="organization-section">
+                    <div class="organization-header">
+                        <h2 class="section-title">Organize Your Trip</h2>
+                        <button type="button" class="btn btn-primary" id="addDayBtn">
+                            <svg viewBox="0 0 20 20" fill="none">
+                                <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" />
                             </svg>
-                        </div>
-                        <p class="upload-text">Drag & drop files here</p>
-                        <p class="upload-subtext">or click to browse</p>
-                        <p class="upload-hint">JPG, PNG, HEIC, MP4, MOV • Max 1GB per video</p>
+                            Add Day
+                        </button>
                     </div>
 
-                    <!-- Upload Progress -->
-                    <div class="upload-progress" id="uploadProgress" hidden>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="progressFill"></div>
-                        </div>
-                        <p class="progress-text" id="progressText">Uploading...</p>
-                    </div>
+                    <p class="organization-hint">Add days to your trip, then add activities, attractions, and
+                        accommodations for each day.</p>
 
-                    <!-- Uploaded Files List -->
-                    <div class="uploaded-files" id="uploadedFiles">
-                        <h3 class="files-title">
-                            <span>Uploaded Files</span>
-                            <span class="files-count" id="filesCount">0</span>
-                        </h3>
-                        <p class="files-hint">Drag files to organize them by day and stop →</p>
-                        <div class="files-list" id="filesList">
-                            <!-- Files will be added here dynamically -->
-                        </div>
+                    <!-- Days Container -->
+                    <div class="days-container" id="daysContainer">
+                        <!-- Days will be added here dynamically -->
                     </div>
                 </section>
 
@@ -109,24 +90,34 @@
             </div>
         </aside>
 
-        <!-- Right Panel - Organization Section -->
-        <section class="right-panel">
+        <!-- Right Panel - Preview -->
+        <section class="right-panel preview-panel">
             <div class="panel-content">
-                <div class="organization-header">
-                    <h2 class="section-title">Organize Your Trip</h2>
-                    <button type="button" class="btn btn-primary" id="addDayBtn">
-                        <svg viewBox="0 0 20 20" fill="none">
-                            <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                        </svg>
-                        Add Day
-                    </button>
+                <div class="preview-header">
+                    <h2 class="section-title">Trip Preview</h2>
+                    <span class="preview-badge">Read-only</span>
                 </div>
+                <p class="preview-hint">This is how your trip will appear after submission.</p>
 
-                <p class="organization-hint">Create days and stops, then drag your uploaded media into each section</p>
+                <!-- Preview Container -->
+                <div class="preview-container" id="previewContainer">
+                    <div class="preview-empty" id="previewEmpty">
+                        <svg viewBox="0 0 64 64" fill="none">
+                            <rect x="8" y="12" width="48" height="40" rx="4" stroke="currentColor" stroke-width="2" />
+                            <path d="M8 24H56" stroke="currentColor" stroke-width="2" />
+                            <circle cx="16" cy="18" r="2" fill="currentColor" />
+                            <circle cx="24" cy="18" r="2" fill="currentColor" />
+                            <circle cx="32" cy="18" r="2" fill="currentColor" />
+                            <path d="M20 36L28 44L44 28" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                        <p>Start adding days and stops to see your trip preview</p>
+                    </div>
 
-                <!-- Days Container -->
-                <div class="days-container" id="daysContainer">
-                    <!-- Days will be added here dynamically -->
+                    <!-- Preview content will be rendered here -->
+                    <div class="preview-content" id="previewContent">
+                        <!-- Dynamic preview content -->
+                    </div>
                 </div>
             </div>
         </section>
@@ -137,7 +128,8 @@
         <div class="submit-content">
             <div class="submit-info">
                 <p class="submit-stats" id="submitStats">
-                    <span id="totalFiles">0</span> files uploaded • <span id="assignedFiles">0</span> assigned to stops
+                    <span id="totalDays">0</span> days • <span id="totalStops">0</span> stops • <span
+                        id="totalMedia">0</span> media files
                 </p>
             </div>
             <button type="button" class="btn btn-submit" id="submitBtn" disabled>
@@ -167,7 +159,7 @@
                 </svg>
             </div>
             <h2>Upload Complete!</h2>
-            <p>Your media has been submitted successfully. You'll receive a confirmation email shortly.</p>
+            <p>Your trip content has been submitted successfully. You'll receive a confirmation email shortly.</p>
             <button type="button" class="btn btn-primary" onclick="location.reload()">Upload Another Trip</button>
         </div>
     </div>
