@@ -167,32 +167,45 @@ function validateFile(file) {
 function generateThumbnail(fileId, file) {
     const fileData = state.files.get(fileId);
 
+    // For videos, use a simple placeholder to avoid memory issues
+    // Loading full videos into memory causes browser crashes
+    if (file.type.startsWith('video/')) {
+        fileData.thumbnail = null; // Will use "VID" text placeholder
+        renderFilesList();
+        renderAllDropZones();
+        return;
+    }
+
+    // For images, create a small compressed thumbnail
     if (file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            fileData.thumbnail = e.target.result;
+        // Use createImageBitmap for memory efficiency (modern browsers)
+        if (typeof createImageBitmap !== 'undefined') {
+            createImageBitmap(file, {
+                resizeWidth: 80,
+                resizeHeight: 80,
+                resizeQuality: 'low'
+            }).then(bitmap => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 80;
+                canvas.height = 80;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(bitmap, 0, 0);
+                fileData.thumbnail = canvas.toDataURL('image/jpeg', 0.5);
+                bitmap.close(); // Release memory
+                renderFilesList();
+                renderAllDropZones();
+            }).catch(() => {
+                // Fallback: no thumbnail
+                fileData.thumbnail = null;
+                renderFilesList();
+                renderAllDropZones();
+            });
+        } else {
+            // Fallback for older browsers - use placeholder
+            fileData.thumbnail = null;
             renderFilesList();
             renderAllDropZones();
-        };
-        reader.readAsDataURL(file);
-    } else if (file.type.startsWith('video/')) {
-        const video = document.createElement('video');
-        video.preload = 'metadata';
-        video.onloadeddata = () => {
-            video.currentTime = 1; // Get frame at 1 second
-        };
-        video.onseeked = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = 120;
-            canvas.height = 80;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            fileData.thumbnail = canvas.toDataURL('image/jpeg');
-            renderFilesList();
-            renderAllDropZones();
-            URL.revokeObjectURL(video.src);
-        };
-        video.src = URL.createObjectURL(file);
+        }
     }
 }
 
