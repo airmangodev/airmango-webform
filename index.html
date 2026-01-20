@@ -44,6 +44,53 @@
                     </div>
                 </section>
 
+                <!-- Trip Details Section -->
+                <section class="trip-details-section">
+                    <h2 class="section-title">Trip Details</h2>
+
+                    <!-- Cover Image -->
+                    <div class="form-group">
+                        <label>Cover Image <span class="required">*</span></label>
+                        <div class="cover-upload-zone" id="coverUploadZone">
+                            <input type="file" id="coverImageInput" accept="image/jpeg,image/jpg,image/png,image/heic"
+                                hidden>
+                            <div class="cover-preview" id="coverPreview" hidden>
+                                <img id="coverPreviewImg" src="" alt="Cover">
+                                <button type="button" class="cover-remove-btn" id="removeCoverBtn">&times;</button>
+                            </div>
+                            <div class="cover-upload-placeholder" id="coverPlaceholder">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                                    <circle cx="8.5" cy="8.5" r="1.5" />
+                                    <path d="M21 15l-5-5L5 21" />
+                                </svg>
+                                <span>Click to upload cover image</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trip Title -->
+                    <div class="form-group">
+                        <label for="tripTitle">Trip Title <span class="required">*</span></label>
+                        <input type="text" id="tripTitle"
+                            placeholder="e.g., 2-Day South Coast & Golden Circle Adventure" required>
+                    </div>
+
+                    <!-- Trip Description -->
+                    <div class="form-group">
+                        <label for="tripDescription">Trip Description <span class="required">*</span></label>
+                        <textarea id="tripDescription" rows="3"
+                            placeholder="A journey through Iceland's most iconic landscapes, featuring massive waterfalls, volcanic black sand beaches..."
+                            required></textarea>
+                    </div>
+
+                    <!-- Location Badge -->
+                    <div class="form-group">
+                        <label for="tripLocation">Location</label>
+                        <input type="text" id="tripLocation" placeholder="e.g., Iceland" value="Iceland">
+                    </div>
+                </section>
+
                 <!-- Trip Organization Section -->
                 <section class="organization-section">
                     <div class="organization-header">
@@ -90,33 +137,188 @@
             </div>
         </aside>
 
-        <!-- Right Panel - Preview -->
+        <!-- Right Panel - Mobile Preview -->
         <section class="right-panel preview-panel">
-            <div class="panel-content">
+            <div class="panel-content preview-panel-content">
                 <div class="preview-header">
-                    <h2 class="section-title">Trip Preview</h2>
-                    <span class="preview-badge">Read-only</span>
+                    <h2 class="section-title">App Preview</h2>
+                    <span class="preview-badge">Live Preview</span>
                 </div>
-                <p class="preview-hint">This is how your trip will appear after submission.</p>
 
-                <!-- Preview Container -->
-                <div class="preview-container" id="previewContainer">
-                    <div class="preview-empty" id="previewEmpty">
-                        <svg viewBox="0 0 64 64" fill="none">
-                            <rect x="8" y="12" width="48" height="40" rx="4" stroke="currentColor" stroke-width="2" />
-                            <path d="M8 24H56" stroke="currentColor" stroke-width="2" />
-                            <circle cx="16" cy="18" r="2" fill="currentColor" />
-                            <circle cx="24" cy="18" r="2" fill="currentColor" />
-                            <circle cx="32" cy="18" r="2" fill="currentColor" />
-                            <path d="M20 36L28 44L44 28" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round" />
-                        </svg>
-                        <p>Start adding days and stops to see your trip preview</p>
-                    </div>
+                <!-- Phone Frame -->
+                <div class="phone-frame">
+                    <!-- Phone Notch -->
+                    <div class="phone-notch"></div>
 
-                    <!-- Preview content will be rendered here -->
-                    <div class="preview-content" id="previewContent">
-                        <!-- Dynamic preview content -->
+                    <!-- Phone Screen -->
+                    <div class="phone-screen" id="phoneScreen">
+                        <!-- App Content -->
+                        <div class="app-container" id="appContainer">
+                            <!-- Status Bar -->
+                            <div class="app-status-bar">
+                                <span class="status-time">16:56</span>
+                                <div class="status-icons">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                        <path
+                                            d="M12 21c-1.1 0-2-.9-2-2h4c0 1.1-.9 2-2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V3c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 4.36 6 6.92 6 10v5l-2 2v1h16v-1l-2-2z" />
+                                    </svg>
+                                    <span class="battery">17%</span>
+                                </div>
+                            </div>
+
+                            <!-- Cover Image Section -->
+                            <div class="app-cover" id="appCover">
+                                <div class="app-cover-image" id="appCoverImage">
+                                    <div class="cover-placeholder-app">
+                                        <svg viewBox="0 0 24 24" width="48" height="48" fill="none"
+                                            stroke="currentColor" stroke-width="1">
+                                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                                            <circle cx="8.5" cy="8.5" r="1.5" />
+                                            <path d="M21 15l-5-5L5 21" />
+                                        </svg>
+                                        <span>Add cover image</span>
+                                    </div>
+                                </div>
+                                <button class="app-back-btn">
+                                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path d="M15 18l-6-6 6-6" />
+                                    </svg>
+                                </button>
+                                <button class="app-info-btn">
+                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <path d="M12 16v-4M12 8h.01" />
+                                    </svg>
+                                </button>
+                                <span class="app-location-badge" id="appLocationBadge">Iceland</span>
+                                <span class="app-image-counter" id="appImageCounter">1/7</span>
+                            </div>
+
+                            <!-- Trip Info Section -->
+                            <div class="app-trip-info">
+                                <div class="app-author-row">
+                                    <div class="app-author">
+                                        <span class="author-label">Travel Architect</span>
+                                        <span class="author-name" id="appAuthorName">Your Name</span>
+                                    </div>
+                                    <button class="app-follow-btn">+ Follow</button>
+                                </div>
+                                <h1 class="app-trip-title" id="appTripTitle">Your Trip Title</h1>
+                                <p class="app-trip-desc" id="appTripDesc">Your trip description will appear here...</p>
+                                <a href="#" class="app-more-link">more</a>
+
+                                <div class="app-action-buttons">
+                                    <button class="app-action-btn">
+                                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                                            <circle cx="12" cy="10" r="3" />
+                                        </svg>
+                                        Map
+                                    </button>
+                                    <button class="app-action-btn app-action-checked">
+                                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                                        </svg>
+                                        Added to collecti...
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Day Navigator -->
+                            <div class="app-day-nav">
+                                <div class="day-nav-info">
+                                    <span class="day-nav-current" id="dayNavCurrent">Day 1</span>
+                                    <span class="day-nav-total" id="dayNavTotal">of 1:</span>
+                                    <span class="day-nav-title" id="dayNavTitle">Add a day to get started</span>
+                                </div>
+                                <div class="day-nav-arrows">
+                                    <button class="day-nav-arrow" id="dayPrevBtn" disabled>
+                                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <path d="M15 18l-6-6 6-6" />
+                                        </svg>
+                                    </button>
+                                    <button class="day-nav-arrow" id="dayNextBtn" disabled>
+                                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <path d="M9 18l6-6-6-6" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Stop Cards Carousel -->
+                            <div class="app-stops-carousel" id="stopsCarousel">
+                                <div class="stops-track" id="stopsTrack">
+                                    <!-- Stop cards will be added here -->
+                                    <div class="stop-card-empty">
+                                        <p>Add stops to your days to see them here</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Floating Action Buttons -->
+                            <div class="app-fab-container">
+                                <button class="app-fab app-fab-add">
+                                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                                        <path d="M12 4v16m-8-8h16" stroke="currentColor" stroke-width="2" fill="none" />
+                                    </svg>
+                                </button>
+                                <button class="app-fab app-fab-minus">
+                                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                                        <path d="M4 12h16" stroke="currentColor" stroke-width="2" fill="none" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <!-- Bottom Navigation -->
+                            <div class="app-bottom-nav">
+                                <div class="nav-item active">
+                                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                                    </svg>
+                                    <span>Home</span>
+                                </div>
+                                <div class="nav-item">
+                                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                                        <path d="M3 9h18" />
+                                    </svg>
+                                    <span>Collection</span>
+                                </div>
+                                <div class="nav-item">
+                                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path d="M12 5v14M5 12h14" />
+                                    </svg>
+                                    <span>New trip</span>
+                                </div>
+                                <div class="nav-item">
+                                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <circle cx="11" cy="11" r="8" />
+                                        <path d="M21 21l-4.35-4.35" />
+                                    </svg>
+                                    <span>Search</span>
+                                </div>
+                                <div class="nav-item">
+                                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                                        <circle cx="12" cy="7" r="4" />
+                                    </svg>
+                                    <span>Account</span>
+                                </div>
+                            </div>
+
+                            <!-- Home Indicator -->
+                            <div class="app-home-indicator"></div>
+                        </div>
                     </div>
                 </div>
             </div>
