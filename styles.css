@@ -1582,7 +1582,8 @@ a:hover {
 .phone-frame {
     position: relative;
     width: 320px;
-    height: 670px;
+    height: 720px;
+    /* Increased to show full cards */
     background: #333e48;
     border-radius: 48px;
     padding: 10px;
@@ -1645,7 +1646,9 @@ a:hover {
     background: #FFFFFF;
     font-family: 'Nunito', sans-serif;
     position: relative;
-    overflow: hidden;
+    overflow-y: auto;
+    /* Allow scrolling within the app */
+    overflow-x: hidden;
 }
 
 /* Status Bar - Exact Figma */
