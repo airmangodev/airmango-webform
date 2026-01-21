@@ -174,7 +174,8 @@ function addDay() {
         stops: []
     };
     state.days.push(day);
-    state.currentDayIndex = state.days.length - 1;
+    // Remove: state.currentDayIndex = state.days.length - 1; 
+    // We stay on the current day unless the user scrolls or we explicitly scroll there.
     renderDays();
     renderMobilePreview();
     updateStats();
@@ -335,6 +336,50 @@ function setupCarouselSwipe() {
             carousel.scrollBy({ left: velocity * 150, behavior: 'smooth' });
         }
     });
+
+    // Sync Day Title with Scroll Position
+    carousel.addEventListener('scroll', () => {
+        if (carousel._scrollLock) return;
+
+        if (carousel._scrollTimeout) clearTimeout(carousel._scrollTimeout);
+        carousel._scrollTimeout = setTimeout(updateCurrentDayFromScroll, 50);
+    });
+}
+
+function updateCurrentDayFromScroll() {
+    const carousel = elements.stopsCarousel;
+    const track = elements.stopsTrack;
+    if (!carousel || !track || state.days.length === 0) return;
+
+    // Find the element at the center of the carousel
+    const carouselRect = carousel.getBoundingClientRect();
+    const centerX = carouselRect.left + carouselRect.width / 2;
+
+    const cards = Array.from(track.children);
+    let currentDayNum = 1;
+    let detectedDayIndex = 0;
+
+    for (const card of cards) {
+        const rect = card.getBoundingClientRect();
+
+        // If it's a divider, it updates our tracking of currentDayNum
+        if (card.classList.contains('app-day-divider')) {
+            const text = card.querySelector('.day-divider-text')?.textContent || '';
+            const match = text.match(/Day\s+(\d+)/);
+            if (match) currentDayNum = parseInt(match[1]);
+        }
+
+        // If this card is currently in the center
+        if (rect.left <= centerX && rect.right >= centerX) {
+            detectedDayIndex = currentDayNum - 1;
+            break;
+        }
+    }
+
+    if (state.currentDayIndex !== detectedDayIndex && detectedDayIndex < state.days.length) {
+        state.currentDayIndex = detectedDayIndex;
+        updateDayNavigation();
+    }
 }
 
 // ===== Media Upload per Stop =====
