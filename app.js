@@ -492,44 +492,53 @@ function generateThumbnail(mediaItem, file) {
 }
 
 // ===== Upload Queue Processing =====
+// ===== Upload Queue Processing =====
 function processUploadQueue() {
-    if (state.activeUploads < CONFIG.maxConcurrentUploads && state.uploadQueue.length > 0) {
+    // Fill all available slots synchronously
+    while (state.activeUploads < CONFIG.maxConcurrentUploads && state.uploadQueue.length > 0) {
+        state.activeUploads++; // Reserve slot IMMEDIATELY
         const item = state.uploadQueue.shift();
-        // Add a tiny delay to prevent race conditions with thumbnail generation and DOM updates
+
+        // Use timeout only to let UI breathe, but state is already safe
         setTimeout(() => {
-            uploadMedia(item.stopId, item.mediaId);
-        }, 100);
+            uploadMedia(item.stopId, item.mediaId).catch(err => {
+                console.error("Critical upload error", err);
+                state.activeUploads--;
+                processUploadQueue();
+            });
+        }, 50);
     }
 }
 
 async function uploadMedia(stopId, mediaId, retryCount = 0) {
     const stop = findStopById(stopId);
-    if (!stop) return;
-
-    const mediaItem = stop.media.find(m => m.id === mediaId);
-    if (!mediaItem || mediaItem.status === 'uploaded') {
-        processUploadQueue(); // Move to next item if already done
+    if (!stop) {
+        state.activeUploads--;
+        processUploadQueue();
         return;
     }
 
-    if (retryCount === 0) {
-        state.activeUploads++;
+    const mediaItem = stop.media.find(m => m.id === mediaId);
+    // If deleted or already done, just cleanup and move on
+    if (!mediaItem || mediaItem.status === 'uploaded') {
+        state.activeUploads--;
+        processUploadQueue();
+        return;
     }
 
     mediaItem.status = 'uploading';
-    renderDays();
+    // Only update UI if we are on the first attempt to reduce flicker
+    if (retryCount === 0) renderDays();
 
     try {
         console.log(`Uploading ${mediaItem.file.name} (Attempt ${retryCount + 1})...`);
         const formData = new FormData();
-        // Some servers expect data fields before the file field
         formData.append('stopId', stopId);
         formData.append('mediaId', mediaId);
         formData.append('file', mediaItem.file);
 
-        // Set a timeout for the fetch
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 60000); // 1 minute timeout
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
 
         const response = await fetch(CONFIG.uploadWebhook, {
             method: 'POST',
@@ -567,8 +576,10 @@ async function uploadMedia(stopId, mediaId, retryCount = 0) {
 
         if (retryCount < 2) {
             console.log(`Retrying upload for ${mediaItem.file.name} in 1.5s...`);
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            return uploadMedia(stopId, mediaId, retryCount + 1);
+            // Do NOT decrement activeUploads, we are still using the slot
+            // Wait a bit then retry
+            setTimeout(() => uploadMedia(stopId, mediaId, retryCount + 1), 1500);
+            return;
         }
 
         // Final failure after retries
@@ -674,7 +685,7 @@ function createStopHtml(stop) {
                         onchange="updateStopDescription('${stop.id}', this.value)" required>${escapeHtml(stop.description)}</textarea>
                 </div>
                 <div class="stop-media-section">
-                    <label class="stop-media-upload" onclick="document.getElementById('media-input-${stop.id}').click()">
+                    <label class="stop-media-upload">
                         <svg viewBox="0 0 20 20" fill="none">
                             <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                         </svg>
