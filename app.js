@@ -214,12 +214,17 @@ function renderCoverPreviews() {
 
     if (state.trip.coverImages.length === 0) {
         elements.coverPreviewsContainer.hidden = true;
-        elements.coverPlaceholder.style.display = 'flex';
+        elements.coverPreviewsContainer.innerHTML = ''; // Clear any existing previews
+        if (elements.coverPlaceholder) {
+            elements.coverPlaceholder.style.display = 'flex';
+        }
         return;
     }
 
     elements.coverPreviewsContainer.hidden = false;
-    elements.coverPlaceholder.style.display = 'none';
+    if (elements.coverPlaceholder) {
+        elements.coverPlaceholder.style.display = 'none';
+    }
 
     elements.coverPreviewsContainer.innerHTML = state.trip.coverImages.map((img, index) => `
         <div class="cover-preview-item">
@@ -1282,6 +1287,41 @@ function renderStopsMedia() {
     `;
 }
 // ===== Media Feed Functions =====
+
+// Generate random like count (Instagram-style range)
+function generateRandomLikes() {
+    const ranges = [
+        { min: 50, max: 999, weight: 30 },           // 50-999
+        { min: 1000, max: 9999, weight: 35 },        // 1K-9.9K
+        { min: 10000, max: 99999, weight: 20 },      // 10K-99K
+        { min: 100000, max: 999999, weight: 10 },    // 100K-999K
+        { min: 1000000, max: 2500000, weight: 5 }    // 1M-2.5M
+    ];
+
+    // Weighted random selection
+    const totalWeight = ranges.reduce((sum, r) => sum + r.weight, 0);
+    let random = Math.random() * totalWeight;
+
+    for (const range of ranges) {
+        random -= range.weight;
+        if (random <= 0) {
+            return Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
+        }
+    }
+    return ranges[0].min;
+}
+
+// Format number with K/M suffix (Instagram-style)
+function formatLikeCount(num) {
+    if (num >= 1000000) {
+        return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+    }
+    if (num >= 1000) {
+        return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+    }
+    return num.toString();
+}
+
 function collectFeaturedMedia() {
     const featured = [];
 
@@ -1319,7 +1359,9 @@ function collectFeaturedMedia() {
                         url: mediaUrl,
                         stopTitle: stop.title,
                         stopDescription: stop.description,
-                        stopType: stop.type
+                        stopType: stop.type,
+                        likes: generateRandomLikes(),
+                        liked: false
                     });
                 } else {
                     console.warn('No local URL available for media:', m.id);
@@ -1412,8 +1454,61 @@ function renderFeedItems() {
         elements.feedCaption.textContent = currentItem.stopDescription || currentItem.stopTitle || 'Featured media';
     }
 
+    // Update like count and state
+    updateFeedLikeButton();
+
     // Cleanup off-screen videos
     cleanupOffscreenMedia();
+}
+
+function updateFeedLikeButton() {
+    const currentItem = state.feed.items[state.feed.currentIndex];
+    if (!currentItem) return;
+
+    const heartBtn = document.getElementById('feedHeart');
+    if (heartBtn) {
+        const countSpan = heartBtn.querySelector('.feed-action-count');
+        if (countSpan) {
+            countSpan.textContent = formatLikeCount(currentItem.likes);
+        }
+
+        // Update liked state
+        if (currentItem.liked) {
+            heartBtn.classList.add('liked');
+        } else {
+            heartBtn.classList.remove('liked');
+        }
+    }
+}
+
+function toggleFeedLike() {
+    const currentItem = state.feed.items[state.feed.currentIndex];
+    if (!currentItem) return;
+
+    const heartBtn = document.getElementById('feedHeart');
+    if (!heartBtn) return;
+
+    // Toggle liked state
+    currentItem.liked = !currentItem.liked;
+
+    if (currentItem.liked) {
+        currentItem.likes += 1;
+        heartBtn.classList.add('liked', 'animate');
+
+        // Remove animation class after animation completes
+        setTimeout(() => {
+            heartBtn.classList.remove('animate');
+        }, 600);
+    } else {
+        currentItem.likes -= 1;
+        heartBtn.classList.remove('liked');
+    }
+
+    // Update count display
+    const countSpan = heartBtn.querySelector('.feed-action-count');
+    if (countSpan) {
+        countSpan.textContent = formatLikeCount(currentItem.likes);
+    }
 }
 
 function renderFeedItem(container, item) {
@@ -1445,9 +1540,10 @@ function renderFeedItem(container, item) {
 
     if (isVideo) {
         container.innerHTML = `
-            <video src="${mediaUrl}" muted playsinline loop></video>
-            <button class="video-play-btn" onclick="toggleFeedVideo(this)">
-                <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+            <video src="${mediaUrl}" muted playsinline loop preload="auto"></video>
+            <button class="video-control-btn paused" onclick="toggleFeedVideo(this)">
+                <svg class="play-icon" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+                <svg class="pause-icon" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
             </button>
         `;
     } else {
@@ -1470,10 +1566,16 @@ function renderFeedProgress() {
 }
 
 function navigateFeed(direction) {
-    const newIndex = state.feed.currentIndex + direction;
+    const total = state.feed.items.length;
+    if (total === 0) return;
 
-    if (newIndex < 0 || newIndex >= state.feed.items.length) {
-        return; // At boundary
+    let newIndex = state.feed.currentIndex + direction;
+
+    // Loop around at boundaries
+    if (newIndex < 0) {
+        newIndex = total - 1; // Loop to last
+    } else if (newIndex >= total) {
+        newIndex = 0; // Loop to first
     }
 
     state.feed.currentIndex = newIndex;
@@ -1496,8 +1598,11 @@ function cleanupOffscreenMedia() {
     // Auto-play current video
     if (elements.feedCurrent) {
         const video = elements.feedCurrent.querySelector('video');
+        const btn = elements.feedCurrent.querySelector('.video-control-btn');
         if (video) {
-            video.play().catch(() => { }); // Ignore autoplay errors
+            video.play().then(() => {
+                if (btn) btn.classList.remove('paused');
+            }).catch(() => { }); // Ignore autoplay errors
         }
     }
 }
@@ -1508,16 +1613,20 @@ function toggleFeedVideo(btn) {
 
     if (video.paused) {
         video.play();
-        btn.style.display = 'none';
+        btn.classList.remove('paused');
     } else {
         video.pause();
-        btn.style.display = 'flex';
+        btn.classList.add('paused');
     }
 }
 
 function setupFeedSwipe() {
     const viewport = elements.feedViewport;
     if (!viewport) return;
+
+    // Prevent adding multiple listeners
+    if (viewport.dataset.swipeSetup === 'true') return;
+    viewport.dataset.swipeSetup = 'true';
 
     let startY = 0;
     let startTime = 0;
@@ -1564,6 +1673,23 @@ function setupFeedSwipe() {
     viewport.addEventListener('mouseup', (e) => {
         handleEnd(e.clientY);
     });
+
+    // Scroll wheel for desktop navigation
+    let wheelDebounce = false;
+    viewport.addEventListener('wheel', (e) => {
+        if (wheelDebounce) return;
+        wheelDebounce = true;
+
+        if (e.deltaY > 0) {
+            navigateFeed(1); // Scroll down = next
+        } else if (e.deltaY < 0) {
+            navigateFeed(-1); // Scroll up = prev
+        }
+
+        setTimeout(() => {
+            wheelDebounce = false;
+        }, 400); // Debounce to prevent rapid scrolling
+    }, { passive: true });
 }
 
 // Update openBlankScreen to open media feed instead
@@ -1593,6 +1719,7 @@ window.openBlankScreen = openBlankScreen;
 window.closeBlankScreen = closeBlankScreen;
 window.scrollCoverMedia = scrollCoverMedia;
 window.toggleFeedVideo = toggleFeedVideo;
+window.toggleFeedLike = toggleFeedLike;
 
 // ===== Initialize on DOM load =====
 document.addEventListener('DOMContentLoaded', init);
