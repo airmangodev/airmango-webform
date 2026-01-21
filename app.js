@@ -111,6 +111,13 @@ function setupEventListeners() {
     elements.dayPrevBtn?.addEventListener('click', () => scrollStops(-1));
     elements.dayNextBtn?.addEventListener('click', () => scrollStops(1));
 
+    // Mobile preview FAB button
+    const mobilePreviewFab = document.getElementById('mobilePreviewFab');
+    const previewPanel = document.getElementById('previewPanel');
+    mobilePreviewFab?.addEventListener('click', () => {
+        previewPanel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
     setupCarouselSwipe();
 }
 
@@ -771,7 +778,9 @@ function renderStopCards() {
         if (item.type === 'divider') {
             return `
                 <div class="app-day-divider">
-                    <span>Day ${item.dayNumber}</span>
+                    <div class="day-divider-circle">
+                        <div class="day-divider-text">Day ${item.dayNumber}</div>
+                    </div>
                 </div>
             `;
         }

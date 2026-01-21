@@ -135,8 +135,17 @@
             </div>
         </aside>
 
+        <!-- Mobile Preview Button (Visible only on small screens) -->
+        <button class="mobile-preview-fab" id="mobilePreviewFab" aria-label="View Preview">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="5" y="2" width="14" height="20" rx="2" />
+                <line x1="12" y1="18" x2="12" y2="18.01" />
+            </svg>
+            <span>Preview</span>
+        </button>
+
         <!-- Right Panel - Mobile Preview -->
-        <section class="right-panel preview-panel">
+        <section class="right-panel preview-panel" id="previewPanel">
             <div class="panel-content preview-panel-content">
                 <div class="preview-header">
                     <h2 class="section-title">App Preview</h2>
