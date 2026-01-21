@@ -135,24 +135,10 @@
             </div>
         </aside>
 
-        <!-- Mobile Preview Button (Visible only on small screens) -->
-        <button class="mobile-preview-fab" id="mobilePreviewFab" aria-label="View Preview">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="5" y="2" width="14" height="20" rx="2" />
-                <line x1="12" y1="18" x2="12" y2="18.01" />
-            </svg>
-            <span>Preview</span>
-        </button>
-
         <!-- Right Panel - Mobile Preview -->
-        <section class="right-panel preview-panel" id="previewPanel">
-            <!-- Close button for mobile modal -->
-            <button class="preview-close-btn" id="previewCloseBtn" aria-label="Close Preview">&times;</button>
+        <section class="right-panel preview-panel">
             <div class="panel-content preview-panel-content">
-                <div class="preview-header">
-                    <h2 class="section-title">App Preview</h2>
-                    <span class="preview-badge">Live Preview</span>
-                </div>
+                <!-- Phone Frame - Exact Figma 375x812 -->
 
                 <!-- Phone Frame - Exact Figma 375x812 -->
                 <div class="phone-frame">
@@ -365,15 +351,18 @@
                         id="totalMedia">0</span> media files
                 </p>
             </div>
-            <button type="button" class="btn btn-submit" id="submitBtn" disabled>
-                <span class="btn-text">Submit Trip Content</span>
-                <span class="btn-loader" hidden>
-                    <svg class="spinner" viewBox="0 0 24 24">
-                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none"
-                            stroke-dasharray="31.4 31.4" stroke-linecap="round" />
-                    </svg>
-                </span>
-            </button>
+            <div class="submit-actions" style="display: flex; gap: 16px; align-items: center;">
+                <a href="why.html" class="header-link">Why we use your content?</a>
+                <button type="button" class="btn btn-submit" id="submitBtn" disabled>
+                    <span class="btn-text">Submit Trip Content</span>
+                    <span class="btn-loader" hidden>
+                        <svg class="spinner" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none"
+                                stroke-dasharray="31.4 31.4" stroke-linecap="round" />
+                        </svg>
+                    </span>
+                </button>
+            </div>
         </div>
     </footer>
 

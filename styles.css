@@ -93,8 +93,7 @@ a:hover {
     background: var(--bg-primary);
     border-bottom: 1px solid var(--border);
     padding: 16px 24px;
-    position: sticky;
-    top: 0;
+    position: relative;
     z-index: 100;
     box-shadow: var(--shadow-sm);
 }
@@ -157,13 +156,16 @@ a:hover {
 
 /* ===== Main Container ===== */
 .main-container {
-    max-width: 1600px;
+    max-width: 1800px;
+    /* Increased from 1600px */
     margin: 0 auto;
-    padding: 24px;
+    padding: 24px 40px 0;
+    /* Adjusted side padding */
     display: grid;
-    grid-template-columns: 400px 1fr;
-    gap: 24px;
-    min-height: calc(100vh - 160px);
+    grid-template-columns: 1.2fr 1fr;
+    /* Make left panel more flexible and wider */
+    gap: 40px;
+    /* Increased gap for a more premium airy feel */
 }
 
 /* 50/50 Split Layout */
@@ -190,38 +192,37 @@ a:hover {
 }
 
 /* ===== Panels ===== */
-.left-panel,
-.right-panel {
+.left-panel {
     background: var(--bg-primary);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md);
-    overflow: hidden;
+    position: sticky;
+    top: 24px;
+    overflow: visible !important;
+    max-height: none !important;
 }
 
+.right-panel {
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    position: sticky;
+    top: 24px;
+    /* Bring it higher now that card header is gone */
+    height: fit-content;
+    overflow: visible !important;
+}
+
+/* Panel content padding */
 .panel-content {
     padding: 24px;
 }
 
-.left-panel {
-    position: sticky;
-    top: 100px;
-    max-height: calc(100vh - 180px);
-    overflow-y: auto;
+.preview-panel-content {
+    padding: 0 !important;
 }
 
-.left-panel::-webkit-scrollbar {
-    width: 6px;
-}
-
-.left-panel::-webkit-scrollbar-track {
-    background: var(--bg-tertiary);
-    border-radius: 3px;
-}
-
-.left-panel::-webkit-scrollbar-thumb {
-    background: var(--border);
-    border-radius: 3px;
-}
+/* Panel custom scrollbars removed to favor global scroll */
 
 .left-panel::-webkit-scrollbar-thumb:hover {
     background: var(--text-muted);
@@ -976,15 +977,16 @@ a:hover {
 .submit-section {
     background: var(--bg-primary);
     border-top: 1px solid var(--border);
-    padding: 16px 24px;
-    position: sticky;
-    bottom: 0;
-    z-index: 100;
-    box-shadow: var(--shadow-lg);
+    padding: 12px 40px;
+    /* Reduced vertical padding significantly */
+    position: relative;
+    margin-top: 0;
+    box-shadow: none;
 }
 
 .submit-content {
-    max-width: 1600px;
+    max-width: 1800px;
+    /* Match main container */
     margin: 0 auto;
     display: flex;
     align-items: center;
@@ -1000,11 +1002,10 @@ a:hover {
 .btn-submit {
     background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     color: white;
-    padding: 14px 32px;
-    font-size: 1rem;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
-    min-width: 200px;
+    padding: 8px 16px;
+    font-size: 0.875rem;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
 }
 
 .btn-submit:hover:not(:disabled) {
@@ -1227,9 +1228,9 @@ a:hover {
 /* Editor Panel */
 .editor-panel {
     position: sticky;
-    top: 100px;
-    max-height: calc(100vh - 180px);
-    overflow-y: auto;
+    top: 24px;
+    overflow: visible !important;
+    max-height: none !important;
 }
 
 .organization-section {
@@ -1366,9 +1367,9 @@ a:hover {
 /* Preview Panel */
 .preview-panel {
     position: sticky;
-    top: 100px;
-    max-height: calc(100vh - 180px);
-    overflow-y: auto;
+    top: 24px;
+    overflow: visible !important;
+    max-height: none !important;
 }
 
 .preview-header {
@@ -1567,7 +1568,8 @@ a:hover {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 20px;
+    padding: 0 20px 20px !important;
+    /* Force remove top padding inherited from .panel-content */
 }
 
 .preview-header {
@@ -1578,18 +1580,21 @@ a:hover {
     margin-bottom: 16px;
 }
 
-/* Realistic Phone Frame - Scaled to fit viewport */
+/* Realistic Phone Frame - Exact Figma dimensions with Charcoal Bezel */
 .phone-frame {
     position: relative;
-    width: 320px;
-    height: 720px;
-    /* Increased to show full cards */
+    width: 399px;
+    height: 812px;
+    /* Restored closer to original standard height */
     background: #333e48;
-    border-radius: 48px;
-    padding: 10px;
-    box-shadow: 0px 20px 40px -12px rgba(0, 0, 0, 0.35);
+    border-radius: 60px;
+    padding: 12px;
+    box-shadow: 0px 25px 50px -12px rgba(0, 0, 0, 0.4);
     border: 1px solid #454f59;
     flex-shrink: 0;
+    transform: scale(0.75);
+    transform-origin: top center;
+    margin-bottom: -200px;
 }
 
 
@@ -1646,9 +1651,7 @@ a:hover {
     background: #FFFFFF;
     font-family: 'Nunito', sans-serif;
     position: relative;
-    overflow-y: auto;
-    /* Allow scrolling within the app */
-    overflow-x: hidden;
+    overflow: hidden;
 }
 
 /* Status Bar - Exact Figma */
@@ -1746,12 +1749,11 @@ a:hover {
     stroke: #171717;
 }
 
-/* Cover Image - Scaled down to fit smaller frame */
+/* Cover Image - Exact Figma 250px with rounded bottom */
 .app-cover {
     position: relative;
-    width: 100%;
-    height: 160px;
-    /* Reduced from 250px */
+    width: 375px;
+    height: 250px;
     flex-shrink: 0;
 }
 
@@ -2303,10 +2305,8 @@ a:hover {
 /* Responsive */
 @media (max-width: 1400px) {
     .phone-frame {
-        width: 320px;
-        height: 693px;
-        transform: scale(0.95);
-        transform-origin: top center;
+        transform: scale(0.65);
+        margin-bottom: -300px;
     }
 }
 
@@ -2315,83 +2315,8 @@ a:hover {
         grid-template-columns: 1fr !important;
     }
 
-    /* Hide preview by default on mobile - show via modal */
     .preview-panel {
         display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 2000;
-        background: rgba(0, 0, 0, 0.95);
-        padding: 0;
-        margin: 0;
-        border-radius: 0;
-        overflow: hidden;
-    }
-
-    .preview-panel.active {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .preview-panel.active .preview-header {
-        display: none;
-    }
-
-    .preview-panel.active .phone-frame {
-        width: 100%;
-        max-width: 100vw;
-        height: 100vh;
-        height: 100dvh;
-        border-radius: 0;
-        padding: 0;
-        background: transparent;
-        border: none;
-        box-shadow: none;
-    }
-
-    .preview-panel.active .phone-screen {
-        border-radius: 0;
-        box-shadow: none;
-    }
-
-    .preview-panel.active .phone-button-left,
-    .preview-panel.active .phone-button-right {
-        display: none;
-    }
-
-    .preview-panel.active .preview-panel-content {
-        width: 100%;
-        height: 100%;
-        padding: 0;
-    }
-
-    /* Close button for mobile preview */
-    .preview-close-btn {
-        display: none;
-    }
-
-    .preview-panel.active .preview-close-btn {
-        display: flex;
-        position: fixed;
-        top: 16px;
-        right: 16px;
-        z-index: 2100;
-        width: 44px;
-        height: 44px;
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
-        border: none;
-        border-radius: 50%;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        color: #fff;
-        font-size: 24px;
     }
 }
 
@@ -2707,15 +2632,15 @@ a:hover {
 
 /* Stop Cards Carousel */
 .app-stops-carousel {
-    flex: 1;
     overflow-x: auto;
     overflow-y: hidden;
     scroll-snap-type: x mandatory;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-x: contain;
-    padding: 8px 16px 24px;
-    /* Added more bottom padding to prevent overlap with nav */
+    padding: 0 16px 8px;
+    /* Reduced bottom padding from 16px */
+    /* Removed top padding */
 }
 
 .app-stops-carousel::-webkit-scrollbar {
@@ -2730,26 +2655,24 @@ a:hover {
 }
 
 .stop-card-empty {
-    min-width: 160px;
-    height: 130px;
+    min-width: 220px;
+    height: 176px;
     background: #F9FAFB;
-    border-radius: 12px;
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: 16px;
+    padding: 20px;
     color: #9CA3AF;
-    font-size: 11px;
+    font-size: 12px;
 }
 
 /* Individual Stop Card */
 .app-stop-card {
-    min-width: 160px;
-    /* Reduced from 220px */
-    max-width: 160px;
-    height: 130px;
-    /* Reduced from 176px */
+    min-width: 220px;
+    max-width: 220px;
+    height: 176px;
     /* 5:4 ratio for 220px width */
     background: #fff;
     border-radius: 20px;
@@ -2775,8 +2698,8 @@ a:hover {
 
 .stop-card-image {
     width: 100%;
-    height: 85px;
-    /* Reduced from 116px to fit smaller card */
+    height: 116px;
+    /* Increased to match larger card size */
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     background-size: cover;
     background-position: center;
@@ -2845,10 +2768,10 @@ a:hover {
 
 /* Day Divider Card */
 .app-day-divider {
-    min-width: 56px;
-    max-width: 56px;
-    height: 130px;
-    /* Match new stop card height */
+    min-width: 64px;
+    max-width: 64px;
+    height: 176px;
+    /* Match stop card height */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2857,8 +2780,8 @@ a:hover {
 }
 
 .day-divider-circle {
-    width: 52px;
-    height: 52px;
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
     background: #FFFFFF;
     border: 1px solid #E5E7EB;
@@ -2922,6 +2845,8 @@ a:hover {
     background: #fff;
     border-top: 1px solid #F3F4F6;
     flex-shrink: 0;
+    margin-top: auto;
+    /* Push to bottom without stretching the content above it */
 }
 
 .nav-item {
@@ -3053,10 +2978,9 @@ a:hover {
 /* Responsive for phone frame */
 @media (max-width: 1200px) {
     .phone-frame {
-        width: 320px;
-        height: 690px;
+        width: 280px;
+        height: 580px;
         border-radius: 40px;
-        margin: 0 auto;
     }
 
     .phone-screen {
@@ -3064,83 +2988,15 @@ a:hover {
     }
 
     .app-cover {
-        height: 180px;
-    }
-}
-
-@media (max-width: 480px) {
-    .phone-frame {
-        width: 100%;
-        max-width: 375px;
-        height: 750px;
-        padding: 0;
-        background: transparent;
-        border: none;
-        box-shadow: none;
-        border-radius: 0;
+        height: 160px;
     }
 
-    .phone-screen {
-        border-radius: 0;
-        box-shadow: none;
+    .app-stop-card {
+        min-width: 140px;
+        max-width: 140px;
     }
 
-    .phone-button-left,
-    .phone-button-right {
-        display: none;
+    .stop-card-image {
+        height: 80px;
     }
-
-    .preview-panel-content {
-        padding: 0;
-    }
-}
-
-/* Mobile Preview Floating Button */
-.mobile-preview-fab {
-    display: none;
-    /* Hidden by default on desktop */
-    position: fixed;
-    bottom: 90px;
-    right: 20px;
-    z-index: 1000;
-    background: linear-gradient(135deg, #E91E8C 0%, #C4177A 100%);
-    color: #FFFFFF;
-    border: none;
-    border-radius: 50px;
-    padding: 12px 20px;
-    font-family: 'Nunito', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 4px 20px rgba(233, 30, 140, 0.4);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    align-items: center;
-    gap: 8px;
-}
-
-.mobile-preview-fab svg {
-    width: 20px;
-    height: 20px;
-    stroke: #FFFFFF;
-}
-
-.mobile-preview-fab:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 24px rgba(233, 30, 140, 0.5);
-}
-
-.mobile-preview-fab:active {
-    transform: translateY(0);
-}
-
-/* Show on mobile/tablet only */
-@media (max-width: 1200px) {
-    .mobile-preview-fab {
-        display: flex;
-    }
-}
-
-/* Desktop close button hidden */
-.preview-close-btn {
-    display: none;
 }

@@ -111,29 +111,6 @@ function setupEventListeners() {
     elements.dayPrevBtn?.addEventListener('click', () => scrollStops(-1));
     elements.dayNextBtn?.addEventListener('click', () => scrollStops(1));
 
-    // Mobile preview FAB button - toggle fullscreen modal
-    const mobilePreviewFab = document.getElementById('mobilePreviewFab');
-    const previewPanel = document.getElementById('previewPanel');
-    const previewCloseBtn = document.getElementById('previewCloseBtn');
-
-    mobilePreviewFab?.addEventListener('click', () => {
-        previewPanel?.classList.add('active');
-        document.body.style.overflow = 'hidden'; // Prevent background scroll
-    });
-
-    previewCloseBtn?.addEventListener('click', () => {
-        previewPanel?.classList.remove('active');
-        document.body.style.overflow = ''; // Restore scrolling
-    });
-
-    // Close preview on escape key
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && previewPanel?.classList.contains('active')) {
-            previewPanel.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-    });
-
     setupCarouselSwipe();
 }
 
