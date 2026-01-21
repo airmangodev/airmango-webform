@@ -1743,11 +1743,12 @@ a:hover {
     stroke: #171717;
 }
 
-/* Cover Image - Exact Figma 250px with rounded bottom */
+/* Cover Image - Scaled down to fit smaller frame */
 .app-cover {
     position: relative;
-    width: 375px;
-    height: 250px;
+    width: 100%;
+    height: 160px;
+    /* Reduced from 250px */
     flex-shrink: 0;
 }
 
@@ -2726,24 +2727,26 @@ a:hover {
 }
 
 .stop-card-empty {
-    min-width: 220px;
-    height: 176px;
+    min-width: 160px;
+    height: 130px;
     background: #F9FAFB;
-    border-radius: 16px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: 20px;
+    padding: 16px;
     color: #9CA3AF;
-    font-size: 12px;
+    font-size: 11px;
 }
 
 /* Individual Stop Card */
 .app-stop-card {
-    min-width: 220px;
-    max-width: 220px;
-    height: 176px;
+    min-width: 160px;
+    /* Reduced from 220px */
+    max-width: 160px;
+    height: 130px;
+    /* Reduced from 176px */
     /* 5:4 ratio for 220px width */
     background: #fff;
     border-radius: 20px;
@@ -2769,8 +2772,8 @@ a:hover {
 
 .stop-card-image {
     width: 100%;
-    height: 116px;
-    /* Increased to match larger card size */
+    height: 85px;
+    /* Reduced from 116px to fit smaller card */
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     background-size: cover;
     background-position: center;
@@ -2839,10 +2842,10 @@ a:hover {
 
 /* Day Divider Card */
 .app-day-divider {
-    min-width: 64px;
-    max-width: 64px;
-    height: 176px;
-    /* Match stop card height */
+    min-width: 56px;
+    max-width: 56px;
+    height: 130px;
+    /* Match new stop card height */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2851,8 +2854,8 @@ a:hover {
 }
 
 .day-divider-circle {
-    width: 64px;
-    height: 64px;
+    width: 52px;
+    height: 52px;
     border-radius: 50%;
     background: #FFFFFF;
     border: 1px solid #E5E7EB;
