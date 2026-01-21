@@ -1578,18 +1578,15 @@ a:hover {
     margin-bottom: 16px;
 }
 
-/* Realistic Phone Frame - Exact Figma dimensions with Charcoal Bezel */
+/* Realistic Phone Frame - Scaled to fit viewport */
 .phone-frame {
     position: relative;
-    width: 399px;
-    /* 375 + 12*2 bezel */
-    height: 836px;
-    /* 812 + 12*2 bezel */
+    width: 320px;
+    height: 670px;
     background: #333e48;
-    /* Dark charcoal frame/bezel */
-    border-radius: 60px;
-    padding: 12px;
-    box-shadow: 0px 25px 50px -12px rgba(0, 0, 0, 0.4);
+    border-radius: 48px;
+    padding: 10px;
+    box-shadow: 0px 20px 40px -12px rgba(0, 0, 0, 0.35);
     border: 1px solid #454f59;
     flex-shrink: 0;
 }
@@ -2314,11 +2311,83 @@ a:hover {
         grid-template-columns: 1fr !important;
     }
 
+    /* Hide preview by default on mobile - show via modal */
     .preview-panel {
-        display: block;
-        /* Show on tablets/mobile */
-        order: 2;
-        /* Put it after the form */
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 2000;
+        background: rgba(0, 0, 0, 0.95);
+        padding: 0;
+        margin: 0;
+        border-radius: 0;
+        overflow: hidden;
+    }
+
+    .preview-panel.active {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .preview-panel.active .preview-header {
+        display: none;
+    }
+
+    .preview-panel.active .phone-frame {
+        width: 100%;
+        max-width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        border-radius: 0;
+        padding: 0;
+        background: transparent;
+        border: none;
+        box-shadow: none;
+    }
+
+    .preview-panel.active .phone-screen {
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .preview-panel.active .phone-button-left,
+    .preview-panel.active .phone-button-right {
+        display: none;
+    }
+
+    .preview-panel.active .preview-panel-content {
+        width: 100%;
+        height: 100%;
+        padding: 0;
+    }
+
+    /* Close button for mobile preview */
+    .preview-close-btn {
+        display: none;
+    }
+
+    .preview-panel.active .preview-close-btn {
+        display: flex;
+        position: fixed;
+        top: 16px;
+        right: 16px;
+        z-index: 2100;
+        width: 44px;
+        height: 44px;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border: none;
+        border-radius: 50%;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #fff;
+        font-size: 24px;
     }
 }
 
@@ -3063,4 +3132,9 @@ a:hover {
     .mobile-preview-fab {
         display: flex;
     }
+}
+
+/* Desktop close button hidden */
+.preview-close-btn {
+    display: none;
 }
