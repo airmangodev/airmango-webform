@@ -16,7 +16,7 @@ const CONFIG = {
 // ===== State =====
 const state = {
     trip: {
-        coverImage: null,
+        coverImages: [], // Array of {url, file, id}
         title: '',
         description: '',
         location: 'Iceland'
@@ -24,8 +24,16 @@ const state = {
     days: [],
     dayCounter: 0,
     currentDayIndex: 0,
+    currentCoverIndex: 0, // For cover image slider
     activeUploads: 0,
-    uploadQueue: []
+    uploadQueue: [],
+    selectedStopIndex: 0,  // For stops detail screen
+    // Media Feed state
+    feed: {
+        items: [],        // Filtered featured media
+        currentIndex: 0,  // Currently viewing
+        isOpen: false
+    }
 };
 
 // ===== DOM Elements =====
@@ -39,26 +47,43 @@ const elements = {
 
     coverUploadZone: document.getElementById('coverUploadZone'),
     coverImageInput: document.getElementById('coverImageInput'),
-    coverPreview: document.getElementById('coverPreview'),
-    coverPreviewImg: document.getElementById('coverPreviewImg'),
+    coverPreviewsContainer: document.getElementById('coverPreviewsContainer'),
     coverPlaceholder: document.getElementById('coverPlaceholder'),
-    removeCoverBtn: document.getElementById('removeCoverBtn'),
     tripTitle: document.getElementById('tripTitle'),
     tripDescription: document.getElementById('tripDescription'),
     tripLocation: document.getElementById('tripLocation'),
 
-    appCoverImage: document.getElementById('appCoverImage'),
+    appCoverSlider: document.getElementById('appCoverSlider'),
     appLocationBadge: document.getElementById('appLocationBadge'),
     appImageCounter: document.getElementById('appImageCounter'),
     appAuthorName: document.getElementById('appAuthorName'),
     appTripTitle: document.getElementById('appTripTitle'),
     appTripDesc: document.getElementById('appTripDesc'),
+    coverPrevBtn: document.getElementById('coverPrevBtn'),
+    coverNextBtn: document.getElementById('coverNextBtn'),
     dayNavLabel: document.getElementById('dayNavLabel'),
     dayNavTitle: document.getElementById('dayNavTitle'),
     dayPrevBtn: document.getElementById('dayPrevBtn'),
     dayNextBtn: document.getElementById('dayNextBtn'),
     stopsCarousel: document.getElementById('stopsCarousel'),
     stopsTrack: document.getElementById('stopsTrack'),
+
+    // Stops Detail Screen
+    stopsDetailScreen: document.getElementById('stopsDetailScreen'),
+    stopsTabs: document.getElementById('stopsTabs'),
+    stopsMediaGallery: document.getElementById('stopsMediaGallery'),
+    stopCardsHint: document.getElementById('stopCardsHint'),
+
+    // Media Feed
+    mediaFeed: document.getElementById('mediaFeed'),
+    feedViewport: document.getElementById('feedViewport'),
+    feedPrev: document.getElementById('feedPrev'),
+    feedCurrent: document.getElementById('feedCurrent'),
+    feedNext: document.getElementById('feedNext'),
+    feedUsername: document.getElementById('feedUsername'),
+    feedCaption: document.getElementById('feedCaption'),
+    feedTripThumb: document.getElementById('feedTripThumb'),
+    feedProgress: document.getElementById('feedProgress'),
 
     totalDays: document.getElementById('totalDays'),
     totalStops: document.getElementById('totalStops'),
@@ -74,6 +99,20 @@ function init() {
     updateStats();
     updateSubmitButton();
     renderMobilePreview();
+
+    // Warn before page refresh/close if there's unsaved data
+    window.addEventListener('beforeunload', (e) => {
+        const hasData = state.days.length > 0 ||
+            state.trip.coverImages.length > 0 ||
+            elements.userName?.value ||
+            elements.tripTitle?.value;
+
+        if (hasData) {
+            e.preventDefault();
+            e.returnValue = ''; // Required for Chrome
+            return 'You have unsaved changes. Are you sure you want to leave?';
+        }
+    });
 }
 
 function setupEventListeners() {
@@ -88,10 +127,7 @@ function setupEventListeners() {
 
     elements.coverUploadZone?.addEventListener('click', () => elements.coverImageInput.click());
     elements.coverImageInput?.addEventListener('change', handleCoverImageSelect);
-    elements.removeCoverBtn?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        removeCoverImage();
-    });
+
     elements.tripTitle?.addEventListener('input', () => {
         state.trip.title = elements.tripTitle.value;
         updateMobilePreview();
@@ -128,39 +164,90 @@ function scrollStops(direction) {
 
 // ===== Cover Image Handling =====
 function handleCoverImageSelect(e) {
-    const file = e.target.files[0];
-    if (!file) return;
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
 
-    if (!CONFIG.allowedImageTypes.includes(file.type)) {
-        showToast('Please select a valid image file (JPG, PNG, HEIC)', 'error');
+    // Limit to 10 images total
+    const remainingSlots = 10 - state.trip.coverImages.length;
+    const filesToProcess = files.slice(0, remainingSlots);
+
+    if (files.length > remainingSlots) {
+        showToast(`You can only upload up to 10 cover images. Only the first ${remainingSlots} were added.`, 'warning');
+    }
+
+    filesToProcess.forEach(async (file) => {
+        if (!CONFIG.allowedImageTypes.includes(file.type)) {
+            showToast(`Skipping invalid file: ${file.name}`, 'error');
+            return;
+        }
+
+        try {
+            // Optimize: Create thumbnail first, then use its source for preview
+            const thumbnail = await createThumbnailDataUrl(file);
+
+            // For the full image in the preview, we can use the same data URL if it's an image
+            // Or use URL.createObjectURL for better performance with large files
+            const fullImageUrl = URL.createObjectURL(file);
+
+            state.trip.coverImages.push({
+                id: generateId(),
+                file: file,
+                url: fullImageUrl,
+                thumbnail: thumbnail || fullImageUrl
+            });
+
+            renderCoverPreviews();
+            updateMobilePreview();
+            updateStats();
+            updateSubmitButton();
+        } catch (err) {
+            console.error('Error processing file:', file.name, err);
+            showToast(`Failed to process ${file.name}`, 'error');
+        }
+    });
+
+    elements.coverImageInput.value = '';
+}
+
+function renderCoverPreviews() {
+    if (!elements.coverPreviewsContainer) return;
+
+    if (state.trip.coverImages.length === 0) {
+        elements.coverPreviewsContainer.hidden = true;
+        elements.coverPlaceholder.style.display = 'flex';
         return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        state.trip.coverImage = {
-            file: file,
-            url: e.target.result,
-            thumbnail: e.target.result
-        };
+    elements.coverPreviewsContainer.hidden = false;
+    elements.coverPlaceholder.style.display = 'none';
 
-        elements.coverPreviewImg.src = e.target.result;
-        elements.coverPreview.hidden = false;
-        elements.coverPlaceholder.style.display = 'none';
-
-        updateMobilePreview();
-        updateSubmitButton();
-    };
-    reader.readAsDataURL(file);
+    elements.coverPreviewsContainer.innerHTML = state.trip.coverImages.map((img, index) => `
+        <div class="cover-preview-item">
+            <img src="${img.thumbnail}" alt="Cover ${index + 1}">
+            <button type="button" class="cover-remove-btn" onclick="removeCoverImage(${index}, event)">&times;</button>
+        </div>
+    `).join('');
 }
 
-function removeCoverImage() {
-    state.trip.coverImage = null;
-    elements.coverPreviewImg.src = '';
-    elements.coverPreview.hidden = true;
-    elements.coverPlaceholder.style.display = 'flex';
-    elements.coverImageInput.value = '';
+function removeCoverImage(index, event) {
+    if (event) event.stopPropagation();
+
+    // Revoke object URL to prevent memory leaks
+    const removedImage = state.trip.coverImages[index];
+    if (removedImage && removedImage.url && removedImage.url.startsWith('blob:')) {
+        URL.revokeObjectURL(removedImage.url);
+    }
+
+    state.trip.coverImages.splice(index, 1);
+
+    // Adjust currentCoverIndex if needed
+    if (state.currentCoverIndex >= state.trip.coverImages.length) {
+        state.currentCoverIndex = Math.max(0, state.trip.coverImages.length - 1);
+    }
+
+    renderCoverPreviews();
     updateMobilePreview();
+    updateStats();
     updateSubmitButton();
 }
 
@@ -232,6 +319,12 @@ function removeStop(stopId) {
     for (const day of state.days) {
         const stopIndex = day.stops.findIndex(s => s.id === stopId);
         if (stopIndex !== -1) {
+            // Revoke object URLs for media in the removed stop
+            day.stops[stopIndex].media.forEach(m => {
+                if (m.url && m.url.startsWith('blob:')) URL.revokeObjectURL(m.url);
+                if (m.thumbnail && m.thumbnail.startsWith('blob:')) URL.revokeObjectURL(m.thumbnail);
+            });
+
             day.stops.splice(stopIndex, 1);
             renderDays();
             renderMobilePreview();
@@ -314,8 +407,9 @@ function setupCarouselSwipe() {
         carousel.scrollLeft = scrollLeft - walk;
     });
 
+    // Touch support for stops carousel
     carousel.addEventListener('touchstart', (e) => {
-        startX = e.touches[0].pageX;
+        startX = e.touches[0].pageX - carousel.offsetLeft;
         scrollLeft = carousel.scrollLeft;
         startTime = Date.now();
     }, { passive: true });
@@ -382,6 +476,8 @@ function updateCurrentDayFromScroll() {
     }
 }
 
+
+
 // ===== Media Upload per Stop =====
 function handleStopMediaUpload(stopId, files) {
     const stop = findStopById(stopId);
@@ -397,7 +493,7 @@ function handleStopMediaUpload(stopId, files) {
         const mediaItem = {
             id: generateId(),
             file: file,
-            url: null,
+            url: URL.createObjectURL(file), // Create blob URL immediately for preview
             thumbnail: null,
             status: 'pending'
         };
@@ -419,6 +515,11 @@ function removeMediaFromStop(stopId, mediaId) {
 
     const mediaIndex = stop.media.findIndex(m => m.id === mediaId);
     if (mediaIndex !== -1) {
+        // Revoke object URLs for the removed media
+        const removedMedia = stop.media[mediaIndex];
+        if (removedMedia.url && removedMedia.url.startsWith('blob:')) URL.revokeObjectURL(removedMedia.url);
+        if (removedMedia.thumbnail && removedMedia.thumbnail.startsWith('blob:')) URL.revokeObjectURL(removedMedia.thumbnail);
+
         stop.media.splice(mediaIndex, 1);
         renderDays();
         renderMobilePreview();
@@ -446,49 +547,67 @@ function validateFile(file) {
     return { valid: true };
 }
 
-function generateThumbnail(mediaItem, file) {
-    const isVideo = file.type.startsWith('video/');
-
-    if (isVideo) {
-        const video = document.createElement('video');
-        video.preload = 'metadata';
-        video.src = URL.createObjectURL(file);
-        video.onloadeddata = () => { video.currentTime = 1; };
-        video.onseeked = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = 220;
-            canvas.height = 116;
-            const ctx = canvas.getContext('2d');
-            const scale = Math.max(220 / video.videoWidth, 116 / video.videoHeight);
-            const x = (220 - video.videoWidth * scale) / 2;
-            const y = (116 - video.videoHeight * scale) / 2;
-            ctx.drawImage(video, x, y, video.videoWidth * scale, video.videoHeight * scale);
-            mediaItem.thumbnail = canvas.toDataURL('image/jpeg', 0.7);
-            URL.revokeObjectURL(video.src);
+async function generateThumbnail(mediaItem, file) {
+    try {
+        const thumbnail = await createThumbnailDataUrl(file);
+        if (thumbnail) {
+            mediaItem.thumbnail = thumbnail;
             renderDays();
             renderMobilePreview();
-        };
-    } else {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const img = new Image();
-            img.onload = () => {
+        }
+    } catch (err) {
+        console.error('Thumbnail generation failed', err);
+    }
+}
+
+function createThumbnailDataUrl(file) {
+    return new Promise((resolve) => {
+        const isVideo = file.type.startsWith('video/');
+
+        if (isVideo) {
+            const video = document.createElement('video');
+            video.preload = 'metadata';
+            video.src = URL.createObjectURL(file);
+            video.muted = true;
+            video.playsInline = true;
+
+            video.onloadeddata = () => { video.currentTime = 1; };
+            video.onseeked = () => {
                 const canvas = document.createElement('canvas');
                 canvas.width = 220;
                 canvas.height = 116;
                 const ctx = canvas.getContext('2d');
-                const scale = Math.max(220 / img.width, 116 / img.height);
-                const x = (220 - img.width * scale) / 2;
-                const y = (116 - img.height * scale) / 2;
-                ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
-                mediaItem.thumbnail = canvas.toDataURL('image/jpeg', 0.7);
-                renderDays();
-                renderMobilePreview();
+                const scale = Math.max(220 / video.videoWidth, 116 / video.videoHeight);
+                const x = (220 - video.videoWidth * scale) / 2;
+                const y = (116 - video.videoHeight * scale) / 2;
+                ctx.drawImage(video, x, y, video.videoWidth * scale, video.videoHeight * scale);
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                URL.revokeObjectURL(video.src);
+                resolve(dataUrl);
             };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    }
+            video.onerror = () => resolve(null);
+        } else {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 220;
+                    canvas.height = 116;
+                    const ctx = canvas.getContext('2d');
+                    const scale = Math.max(220 / img.width, 116 / img.height);
+                    const x = (220 - img.width * scale) / 2;
+                    const y = (116 - img.height * scale) / 2;
+                    ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+                    resolve(canvas.toDataURL('image/jpeg', 0.7));
+                };
+                img.onerror = () => resolve(null);
+                img.src = e.target.result;
+            };
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(file);
+        }
+    });
 }
 
 // ===== Upload Queue Processing =====
@@ -551,6 +670,10 @@ async function uploadMedia(stopId, mediaId, retryCount = 0) {
             console.warn('Webhook response was not valid JSON:', responseText);
         }
 
+        // Revoke the temporary object URL for the media item
+        if (mediaItem.url && mediaItem.url.startsWith('blob:')) {
+            URL.revokeObjectURL(mediaItem.url);
+        }
         mediaItem.url = result.url || result.fileUrl || `uploaded_${mediaId}_${Date.now()}`;
         mediaItem.status = 'uploaded';
         showToast('File uploaded successfully', 'success');
@@ -700,24 +823,35 @@ function renderMobilePreview() {
 }
 
 function updateMobilePreview() {
-    // Update cover image
-    const coverImageEl = elements.appCoverImage;
-    if (coverImageEl) {
-        if (state.trip.coverImage) {
-            coverImageEl.style.backgroundImage = `url('${state.trip.coverImage.url}')`;
-            coverImageEl.innerHTML = '';
+    // Update cover slider
+    const slider = elements.appCoverSlider;
+    if (slider) {
+        if (state.trip.coverImages.length > 0) {
+            slider.innerHTML = state.trip.coverImages.map(img => `
+                <div class="app-cover-item">
+                    <div class="app-cover-image" style="background-image: url('${img.url}')"></div>
+                </div>
+            `).join('');
+
+            // Apply current scroll position
+            const offset = state.currentCoverIndex * 100;
+            slider.style.transform = `translateX(-${offset}%)`;
         } else {
-            coverImageEl.style.backgroundImage = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-            coverImageEl.innerHTML = `
-                <div class="cover-placeholder-app">
-                    <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1">
-                        <rect x="3" y="3" width="18" height="18" rx="2"/>
-                        <circle cx="8.5" cy="8.5" r="1.5"/>
-                        <path d="M21 15l-5-5L5 21"/>
-                    </svg>
-                    <span>Add cover image</span>
+            slider.innerHTML = `
+                <div class="app-cover-item active">
+                    <div class="app-cover-image">
+                        <div class="cover-placeholder-app">
+                            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <path d="M21 15l-5-5L5 21"/>
+                            </svg>
+                            <span>Add cover image</span>
+                        </div>
+                    </div>
                 </div>
             `;
+            slider.style.transform = 'translateX(0)';
         }
     }
 
@@ -727,13 +861,15 @@ function updateMobilePreview() {
         if (span) span.textContent = state.trip.location || 'Iceland';
     }
 
-    // Count total media
-    let totalMedia = state.trip.coverImage ? 1 : 0;
-    state.days.forEach(day => {
-        day.stops.forEach(stop => { totalMedia += stop.media.length; });
-    });
+    // Update images counter and nav arrows
     if (elements.appImageCounter) {
-        elements.appImageCounter.textContent = `1/${totalMedia || 1}`;
+        const total = Math.max(1, state.trip.coverImages.length);
+        const current = state.trip.coverImages.length > 0 ? state.currentCoverIndex + 1 : 1;
+        elements.appImageCounter.textContent = `${current}/${total}`;
+
+        // Show/hide nav buttons based on image count
+        if (elements.coverPrevBtn) elements.coverPrevBtn.hidden = total <= 1;
+        if (elements.coverNextBtn) elements.coverNextBtn.hidden = total <= 1;
     }
 
     // Update author name
@@ -749,6 +885,34 @@ function updateMobilePreview() {
     // Update trip description
     if (elements.appTripDesc) {
         elements.appTripDesc.textContent = state.trip.description || 'Discover the most iconic landscapes of South Iceland — from moss-covered canyons and black-sand beaches to powerful waterfalls and dramatic cliffs sha...';
+    }
+}
+
+function scrollCoverMedia(direction) {
+    if (state.trip.coverImages.length <= 1) return;
+
+    state.currentCoverIndex += direction;
+
+    // Loop around
+    if (state.currentCoverIndex >= state.trip.coverImages.length) {
+        state.currentCoverIndex = 0;
+    } else if (state.currentCoverIndex < 0) {
+        state.currentCoverIndex = state.trip.coverImages.length - 1;
+    }
+
+    updateMobilePreview();
+}
+
+// ===== Blank Screen Management =====
+function openBlankScreen() {
+    if (elements.blankScreen) {
+        elements.blankScreen.hidden = false;
+    }
+}
+
+function closeBlankScreen() {
+    if (elements.blankScreen) {
+        elements.blankScreen.hidden = true;
     }
 }
 
@@ -823,7 +987,7 @@ function renderStopCards() {
             : null;
 
         return `
-            <div class="app-stop-card ${item.isTapped ? 'tapped' : ''}">
+            <div class="app-stop-card ${item.isTapped ? 'tapped' : ''}" onclick="openStopsDetailScreen(${item.stopNumber - 1})">
                 <div class="stop-card-image" style="${coverImage ? `background-image: url('${coverImage}')` : ''}">
                     <span class="stop-card-badge">Stop ${item.stopNumber}</span>
                     ${item.isTapped ? '<span class="stop-card-tapped-badge">Tapped in Feed</span>' : ''}
@@ -841,16 +1005,25 @@ function renderStopCards() {
 function updateStats() {
     const totalDays = state.days.length;
     let totalStops = 0;
-    let totalMedia = state.trip.coverImage ? 1 : 0;
+    let totalMedia = state.trip.coverImages.length;
+    let hasStopMedia = false;
 
     state.days.forEach(day => {
         totalStops += day.stops.length;
-        day.stops.forEach(stop => { totalMedia += stop.media.length; });
+        day.stops.forEach(stop => {
+            totalMedia += stop.media.length;
+            if (stop.media.length > 0) hasStopMedia = true;
+        });
     });
 
     if (elements.totalDays) elements.totalDays.textContent = totalDays;
     if (elements.totalStops) elements.totalStops.textContent = totalStops;
     if (elements.totalMedia) elements.totalMedia.textContent = totalMedia;
+
+    // Show instruction hint after first stop media is added
+    if (hasStopMedia && elements.stopCardsHint && elements.stopsDetailScreen?.hidden !== false) {
+        elements.stopCardsHint.classList.remove('hidden');
+    }
 }
 
 function updateSubmitButton() {
@@ -865,7 +1038,7 @@ function validateForm() {
 
     if (!userName || !userEmail || !legalConsent) return false;
     if (!isValidEmail(userEmail)) return false;
-    if (!state.trip.coverImage) return false;
+    if (state.trip.coverImages.length === 0) return false;
     if (!state.trip.title.trim()) return false;
     if (!state.trip.description.trim()) return false;
     if (state.days.length === 0) return false;
@@ -929,17 +1102,20 @@ function buildSubmissionPayload() {
             title: state.trip.title,
             description: state.trip.description,
             location: state.trip.location,
-            coverImage: state.trip.coverImage?.url || null
+            coverImages: state.trip.coverImages.map(img => img.url) // Send all cover URLs
         },
         submittedAt: new Date().toISOString(),
         days: state.days.map(day => ({
+            id: day.id, // Include ID for reference if needed by backend
             number: day.number,
             title: day.title,
             stops: day.stops.map(stop => ({
+                id: stop.id, // Include ID for reference if needed by backend
                 type: stop.type,
                 title: stop.title,
                 description: stop.description,
                 media: stop.media.filter(m => m.status === 'uploaded').map(m => ({
+                    id: m.id, // Include ID for reference if needed by backend
                     url: m.url,
                     fileName: m.file.name,
                     fileType: m.file.type,
@@ -983,6 +1159,422 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
+// ===== Stops Detail Screen =====
+function getAllStops() {
+    const allStops = [];
+    state.days.forEach(day => {
+        day.stops.forEach(stop => {
+            allStops.push(stop);
+        });
+    });
+    return allStops;
+}
+
+function openStopsDetailScreen(stopIndex) {
+    const allStops = getAllStops();
+    if (allStops.length === 0) return;
+
+    state.selectedStopIndex = stopIndex;
+
+    if (elements.stopsDetailScreen) {
+        elements.stopsDetailScreen.hidden = false;
+        elements.stopsDetailScreen.classList.remove('closing');
+    }
+
+    // Hide the instruction hint
+    if (elements.stopCardsHint) {
+        elements.stopCardsHint.classList.add('hidden');
+    }
+
+    renderStopsTabs();
+    renderStopsMedia();
+}
+
+function closeStopsDetailScreen() {
+    if (elements.stopsDetailScreen) {
+        elements.stopsDetailScreen.classList.add('closing');
+        setTimeout(() => {
+            elements.stopsDetailScreen.hidden = true;
+            elements.stopsDetailScreen.classList.remove('closing');
+
+            // Re-check if hint should be shown based on media
+            updateStats();
+        }, 250);
+    }
+}
+
+function selectStopTab(stopIndex) {
+    state.selectedStopIndex = stopIndex;
+    renderStopsTabs();
+    renderStopsMedia();
+
+    // Scroll the active tab into view
+    const activeTab = elements.stopsTabs?.querySelector('.stop-tab.active');
+    if (activeTab) {
+        activeTab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+}
+
+function renderStopsTabs() {
+    if (!elements.stopsTabs) return;
+
+    const allStops = getAllStops();
+
+    if (allStops.length === 0) {
+        elements.stopsTabs.innerHTML = '';
+        return;
+    }
+
+    elements.stopsTabs.innerHTML = allStops.map((stop, index) => `
+        <button class="stop-tab ${index === state.selectedStopIndex ? 'active' : ''}" 
+                onclick="selectStopTab(${index})">
+            Stop ${index + 1}
+        </button>
+    `).join('');
+}
+
+function renderStopsMedia() {
+    if (!elements.stopsMediaGallery) return;
+
+    const allStops = getAllStops();
+
+    if (allStops.length === 0) {
+        elements.stopsMediaGallery.innerHTML = `
+            <div class="stops-empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <path d="M21 15l-5-5L5 21"/>
+                </svg>
+                <p>No stops available</p>
+            </div>
+        `;
+        return;
+    }
+
+    const currentStop = allStops[state.selectedStopIndex];
+
+    if (!currentStop || currentStop.media.length === 0) {
+        elements.stopsMediaGallery.innerHTML = `
+            <div class="stops-empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <path d="M21 15l-5-5L5 21"/>
+                </svg>
+                <p>No media for this stop</p>
+            </div>
+        `;
+        return;
+    }
+
+    elements.stopsMediaGallery.innerHTML = `
+        <div class="stops-media-grid">
+            ${currentStop.media.map(media => {
+        const isVideo = media.file?.type?.startsWith('video/');
+        return `
+                    <div class="stops-media-item ${isVideo ? 'video' : ''}">
+                        <img src="${media.thumbnail || ''}" alt="Media">
+                    </div>
+                `;
+    }).join('')}
+        </div>
+    `;
+}
+// ===== Media Feed Functions =====
+function collectFeaturedMedia() {
+    const featured = [];
+
+    // Collect all media from all stops, marking first 2 per stop as featured by default
+    state.days.forEach(day => {
+        day.stops.forEach(stop => {
+            stop.media.forEach((m, idx) => {
+                // Default: ALL media are featured (shown in feed)
+                if (m.featured === undefined) {
+                    m.featured = true;
+                }
+
+                if (!m.featured) return;
+
+                // PRIORITY: Use local URLs (blob: or data:) over server URLs
+                // Server URLs won't work for preview - we need local data
+                let mediaUrl = null;
+
+                // 1. Best: create from file (always works)
+                if (m.file) {
+                    mediaUrl = URL.createObjectURL(m.file);
+                }
+                // 2. Fallback: use thumbnail if it's local
+                else if (m.thumbnail && (m.thumbnail.startsWith('data:') || m.thumbnail.startsWith('blob:'))) {
+                    mediaUrl = m.thumbnail;
+                }
+                // 3. Use url only if it's local (not a server URL)
+                else if (m.url && (m.url.startsWith('blob:') || m.url.startsWith('data:'))) {
+                    mediaUrl = m.url;
+                }
+
+                if (mediaUrl) {
+                    featured.push({
+                        ...m,
+                        url: mediaUrl,
+                        stopTitle: stop.title,
+                        stopDescription: stop.description,
+                        stopType: stop.type
+                    });
+                } else {
+                    console.warn('No local URL available for media:', m.id);
+                }
+            });
+        });
+    });
+
+    return featured;
+}
+
+function openMediaFeed() {
+    const items = collectFeaturedMedia();
+
+    console.log('Opening media feed with', items.length, 'items');
+    console.log('Items:', items);
+
+    // Always open the feed, show empty state if no items
+    state.feed.items = items;
+    state.feed.currentIndex = 0;
+    state.feed.isOpen = true;
+
+    if (elements.mediaFeed) {
+        elements.mediaFeed.hidden = false;
+    }
+
+    // Set trip thumbnail
+    if (elements.feedTripThumb && state.trip.coverImages.length > 0) {
+        elements.feedTripThumb.style.backgroundImage = `url('${state.trip.coverImages[0].url}')`;
+    }
+
+    // Set username
+    if (elements.feedUsername) {
+        elements.feedUsername.textContent = elements.userName?.value || 'User';
+    }
+
+    if (items.length === 0) {
+        // Show empty state message in the feed
+        if (elements.feedCurrent) {
+            elements.feedCurrent.innerHTML = `
+                <div style="color: white; text-align: center; padding: 40px;">
+                    <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1" style="margin-bottom: 16px; opacity: 0.5;">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <path d="M21 15l-5-5L5 21"/>
+                    </svg>
+                    <p style="font-size: 16px; margin: 0 0 8px 0;">No featured media yet</p>
+                    <p style="font-size: 13px; opacity: 0.7; margin: 0;">Upload images or videos to your stops,<br>then they'll appear here!</p>
+                </div>
+            `;
+        }
+        if (elements.feedPrev) elements.feedPrev.innerHTML = '';
+        if (elements.feedNext) elements.feedNext.innerHTML = '';
+        return;
+    }
+
+    renderFeedItems();
+    renderFeedProgress();
+    setupFeedSwipe();
+}
+
+function closeMediaFeed() {
+    state.feed.isOpen = false;
+
+    if (elements.mediaFeed) {
+        elements.mediaFeed.hidden = true;
+    }
+
+    // Cleanup: pause all videos
+    cleanupOffscreenMedia();
+}
+
+function renderFeedItems() {
+    const items = state.feed.items;
+    const idx = state.feed.currentIndex;
+
+    const prevItem = items[idx - 1] || null;
+    const currentItem = items[idx] || null;
+    const nextItem = items[idx + 1] || null;
+
+    // Render prev
+    renderFeedItem(elements.feedPrev, prevItem);
+    // Render current
+    renderFeedItem(elements.feedCurrent, currentItem);
+    // Render next
+    renderFeedItem(elements.feedNext, nextItem);
+
+    // Update caption
+    if (elements.feedCaption && currentItem) {
+        elements.feedCaption.textContent = currentItem.stopDescription || currentItem.stopTitle || 'Featured media';
+    }
+
+    // Cleanup off-screen videos
+    cleanupOffscreenMedia();
+}
+
+function renderFeedItem(container, item) {
+    if (!container) {
+        console.warn('Feed container is null');
+        return;
+    }
+
+    if (!item) {
+        container.innerHTML = '';
+        return;
+    }
+
+    console.log('Rendering feed item:', { url: item.url, file: item.file?.name });
+
+    // Ensure we have a valid URL
+    let mediaUrl = item.url;
+    if (!mediaUrl && item.file) {
+        mediaUrl = URL.createObjectURL(item.file);
+    }
+
+    if (!mediaUrl) {
+        console.warn('No valid URL for media item:', item);
+        container.innerHTML = '<div style="color:white;text-align:center;padding:20px;">No media URL available</div>';
+        return;
+    }
+
+    const isVideo = item.file?.type?.startsWith('video/');
+
+    if (isVideo) {
+        container.innerHTML = `
+            <video src="${mediaUrl}" muted playsinline loop></video>
+            <button class="video-play-btn" onclick="toggleFeedVideo(this)">
+                <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+            </button>
+        `;
+    } else {
+        container.innerHTML = `<img src="${mediaUrl}" alt="Media" onerror="console.error('Image failed to load:', '${mediaUrl}')">`;
+    }
+}
+
+function renderFeedProgress() {
+    if (!elements.feedProgress) return;
+
+    const total = state.feed.items.length;
+    const current = state.feed.currentIndex;
+
+    // Limit dots to max 10 for visual clarity
+    const maxDots = Math.min(total, 10);
+
+    elements.feedProgress.innerHTML = Array.from({ length: maxDots }, (_, i) =>
+        `<div class="feed-progress-dot ${i === current ? 'active' : ''}"></div>`
+    ).join('');
+}
+
+function navigateFeed(direction) {
+    const newIndex = state.feed.currentIndex + direction;
+
+    if (newIndex < 0 || newIndex >= state.feed.items.length) {
+        return; // At boundary
+    }
+
+    state.feed.currentIndex = newIndex;
+    renderFeedItems();
+    renderFeedProgress();
+}
+
+function cleanupOffscreenMedia() {
+    // Pause videos that are not current
+    [elements.feedPrev, elements.feedNext].forEach(container => {
+        if (container) {
+            const video = container.querySelector('video');
+            if (video) {
+                video.pause();
+                video.currentTime = 0;
+            }
+        }
+    });
+
+    // Auto-play current video
+    if (elements.feedCurrent) {
+        const video = elements.feedCurrent.querySelector('video');
+        if (video) {
+            video.play().catch(() => { }); // Ignore autoplay errors
+        }
+    }
+}
+
+function toggleFeedVideo(btn) {
+    const video = btn.parentElement.querySelector('video');
+    if (!video) return;
+
+    if (video.paused) {
+        video.play();
+        btn.style.display = 'none';
+    } else {
+        video.pause();
+        btn.style.display = 'flex';
+    }
+}
+
+function setupFeedSwipe() {
+    const viewport = elements.feedViewport;
+    if (!viewport) return;
+
+    let startY = 0;
+    let startTime = 0;
+    let isSwiping = false;
+
+    const handleStart = (y) => {
+        startY = y;
+        startTime = Date.now();
+        isSwiping = true;
+    };
+
+    const handleEnd = (y) => {
+        if (!isSwiping) return;
+        isSwiping = false;
+
+        const diffY = startY - y;
+        const timeDiff = Date.now() - startTime;
+        const velocity = Math.abs(diffY) / timeDiff;
+
+        // Swipe threshold: 50px or high velocity
+        if (Math.abs(diffY) > 50 || velocity > 0.5) {
+            if (diffY > 0) {
+                navigateFeed(1); // Swipe up = next
+            } else {
+                navigateFeed(-1); // Swipe down = prev
+            }
+        }
+    };
+
+    // Touch events
+    viewport.addEventListener('touchstart', (e) => {
+        handleStart(e.touches[0].clientY);
+    }, { passive: true });
+
+    viewport.addEventListener('touchend', (e) => {
+        handleEnd(e.changedTouches[0].clientY);
+    }, { passive: true });
+
+    // Mouse events for testing
+    viewport.addEventListener('mousedown', (e) => {
+        handleStart(e.clientY);
+    });
+
+    viewport.addEventListener('mouseup', (e) => {
+        handleEnd(e.clientY);
+    });
+}
+
+// Update openBlankScreen to open media feed instead
+function openBlankScreen() {
+    openMediaFeed();
+}
+
+function closeBlankScreen() {
+    closeMediaFeed();
+}
+
 // ===== Expose functions globally =====
 window.removeDay = removeDay;
 window.addStop = addStop;
@@ -991,6 +1583,16 @@ window.updateDayTitle = updateDayTitle;
 window.updateStopTitle = updateStopTitle;
 window.updateStopDescription = updateStopDescription;
 window.removeMediaFromStop = removeMediaFromStop;
+window.openStopsDetailScreen = openStopsDetailScreen;
+window.closeStopsDetailScreen = closeStopsDetailScreen;
+window.selectStopTab = selectStopTab;
+window.removeCoverImage = removeCoverImage;
+window.openMediaFeed = openMediaFeed;
+window.closeMediaFeed = closeMediaFeed;
+window.openBlankScreen = openBlankScreen;
+window.closeBlankScreen = closeBlankScreen;
+window.scrollCoverMedia = scrollCoverMedia;
+window.toggleFeedVideo = toggleFeedVideo;
 
 // ===== Initialize on DOM load =====
 document.addEventListener('DOMContentLoaded', init);
