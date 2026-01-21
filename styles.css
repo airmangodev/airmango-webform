@@ -1578,51 +1578,65 @@ a:hover {
     margin-bottom: 16px;
 }
 
-/* Phone Frame - Dark Slate Blue Bezel */
+/* Realistic Phone Frame - Exact Figma dimensions with Charcoal Bezel */
 .phone-frame {
     position: relative;
-    width: 340px;
-    height: 700px;
-    background: #3d4f5f;
-    border-radius: 45px;
-    padding: 10px;
-    box-shadow:
-        0 0 0 2px #2d3d4d,
-        0 25px 50px -12px rgba(0, 0, 0, 0.4),
-        inset 0 0 0 2px rgba(255, 255, 255, 0.05);
+    width: 399px;
+    /* 375 + 12*2 bezel */
+    height: 836px;
+    /* 812 + 12*2 bezel */
+    background: #333e48;
+    /* Dark charcoal frame/bezel */
+    border-radius: 60px;
+    padding: 12px;
+    box-shadow: 0px 25px 50px -12px rgba(0, 0, 0, 0.4);
+    border: 1px solid #454f59;
+    flex-shrink: 0;
 }
 
-.phone-notch {
+
+
+/* Physical Buttons */
+.phone-button-left,
+.phone-button-right {
     position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 120px;
-    height: 22px;
-    background: #3d4f5f;
-    border-radius: 0 0 16px 16px;
-    z-index: 40;
+    background: #454f59;
+    width: 3px;
+    border-radius: 2px;
+    left: -3px;
+    z-index: 10;
 }
 
-.phone-notch::before {
-    content: '';
-    position: absolute;
-    top: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 6px;
-    background: #2d3d4d;
-    border-radius: 3px;
+.phone-button-left.silent {
+    top: 100px;
+    height: 25px;
+}
+
+.phone-button-left.volume-up {
+    top: 150px;
+    height: 50px;
+}
+
+.phone-button-left.volume-down {
+    top: 210px;
+    height: 50px;
+}
+
+.phone-button-right.power {
+    left: auto;
+    right: -3px;
+    top: 180px;
+    height: 80px;
 }
 
 .phone-screen {
     width: 100%;
     height: 100%;
     background: #FFFFFF;
-    border-radius: 35px;
+    border-radius: 48px;
     overflow: hidden;
     position: relative;
+    box-shadow: inset 0 0 1px 1px rgba(0, 0, 0, 0.1);
 }
 
 /* App Container */
@@ -1665,42 +1679,36 @@ a:hover {
     gap: 7px;
 }
 
-.status-cellular,
-.status-wifi {
+.status-icons .cellular,
+.status-icons .wifi {
     width: 17px;
     height: 12px;
     fill: #FFFFFF;
 }
 
-.status-battery {
-    display: flex;
-    align-items: center;
-    gap: 1px;
-}
-
-.status-battery {
+.battery {
     display: flex;
     align-items: center;
     gap: 1px;
 }
 
 .battery-body {
-    width: 22px;
-    height: 11px;
+    width: 25px;
+    height: 13px;
     border: 1px solid rgba(255, 255, 255, 0.35);
-    border-radius: 3px;
-    padding: 1.5px;
+    border-radius: 4.3px;
+    padding: 2px;
 }
 
 .battery-level {
     width: 100%;
     height: 100%;
     background: #FFFFFF;
-    border-radius: 1.5px;
+    border-radius: 2.5px;
 }
 
 .battery-cap {
-    width: 1px;
+    width: 1.33px;
     height: 4px;
     background: rgba(255, 255, 255, 0.4);
     border-radius: 0 1px 1px 0;
@@ -1736,11 +1744,11 @@ a:hover {
     stroke: #171717;
 }
 
-/* Cover Image - Exact Figma with rounded bottom */
+/* Cover Image - Exact Figma 250px with rounded bottom */
 .app-cover {
     position: relative;
-    width: 100%;
-    height: 220px;
+    width: 375px;
+    height: 250px;
     flex-shrink: 0;
 }
 
@@ -1752,36 +1760,6 @@ a:hover {
     background-position: center;
     box-shadow: 0px 2px 16px rgba(47, 47, 47, 0.32);
     border-radius: 0px 0px 24px 24px;
-}
-
-/* Header buttons on cover */
-.app-header-buttons {
-    position: absolute;
-    top: 48px;
-    left: 12px;
-    right: 12px;
-    display: flex;
-    justify-content: space-between;
-    z-index: 25;
-}
-
-.app-header-btn {
-    width: 32px;
-    height: 32px;
-    background: #E5E5E5;
-    border: 1px solid #E5E5E5;
-    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.05);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
-
-.app-header-btn svg {
-    width: 14px;
-    height: 14px;
-    stroke: #171717;
 }
 
 .app-cover-gradient {
@@ -1881,15 +1859,10 @@ a:hover {
 }
 
 .app-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    overflow: hidden;
-}
-
-.app-avatar svg {
-    width: 100%;
-    height: 100%;
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10998.9px;
 }
 
 .app-author-details {
@@ -2158,151 +2131,6 @@ a:hover {
     color: #525252;
 }
 
-/* Individual Stop Card - Exact Figma 220x176 */
-.app-stop-card {
-    min-width: 220px;
-    width: 220px;
-    height: 176px;
-    background: #FFFFFF;
-    border: 1px solid #E5E5E5;
-    box-shadow: 0px 2px 16px rgba(47, 47, 47, 0.12);
-    border-radius: 16px;
-    overflow: hidden;
-    scroll-snap-align: start;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Stop card with tapped state - no border, just shadow */
-.app-stop-card.tapped {
-    border: none;
-    box-shadow: 0px 2px 16px rgba(47, 47, 47, 0.32);
-}
-
-/* Stop Card Image - Exact Figma 116px */
-.stop-card-image {
-    width: 220px;
-    height: 116px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    background-size: cover;
-    background-position: center;
-    border-radius: 16px 16px 0 0;
-    border: 1px solid #E5E5E5;
-    border-bottom: none;
-    position: relative;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 12px;
-}
-
-.app-stop-card.tapped .stop-card-image {
-    border: none;
-    padding: 0;
-    justify-content: space-between;
-}
-
-/* Stop Badge - Exact Figma */
-.stop-card-badge {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4px 8px;
-    background: rgba(255, 255, 255, 0.8);
-    border-radius: 999px;
-    font-family: 'Nunito', sans-serif;
-    font-weight: 400;
-    font-size: 12px;
-    line-height: 16px;
-    color: #171717;
-}
-
-.app-stop-card.tapped .stop-card-badge {
-    margin: 12px 0 0 12px;
-}
-
-/* Tapped Badge - Exact Figma pink gradient */
-.stop-card-tapped-badge {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px 12px;
-    background: linear-gradient(270deg, #BB0158 0%, #AA0050 0%, #D60366 100%);
-    border-radius: 0px 0px 0px 12px;
-    font-family: 'Nunito', sans-serif;
-    font-weight: 400;
-    font-size: 12px;
-    line-height: 16px;
-    color: #FFFFFF;
-    align-self: flex-start;
-}
-
-/* Stop Card Content - Exact Figma 60px */
-.stop-card-content {
-    width: 220px;
-    height: 60px;
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    border: 1px solid #E5E5E5;
-    border-top: none;
-    border-radius: 0 0 16px 16px;
-    box-sizing: border-box;
-}
-
-.app-stop-card.tapped .stop-card-content {
-    border: none;
-}
-
-.stop-card-title {
-    font-family: 'Nunito', sans-serif;
-    font-weight: 700;
-    font-size: 12px;
-    line-height: 16px;
-    color: #171717;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.stop-card-desc {
-    font-family: 'Nunito', sans-serif;
-    font-weight: 400;
-    font-size: 12px;
-    line-height: 16px;
-    color: #525252;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Day Divider - Exact Figma */
-.app-day-divider {
-    min-width: 56px;
-    width: 56px;
-    height: 56px;
-    background: #FFFFFF;
-    border: 1px solid #E5E5E5;
-    box-shadow: 0px 2px 16px rgba(47, 47, 47, 0.12);
-    border-radius: 999px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    scroll-snap-align: start;
-    align-self: center;
-}
-
-.app-day-divider span {
-    font-family: 'Nunito', sans-serif;
-    font-weight: 600;
-    font-size: 14px;
-    line-height: 20px;
-    color: #171717;
-}
-
 /* Bottom Navigation - Exact Figma */
 .app-bottom-nav {
     display: flex;
@@ -2339,28 +2167,22 @@ a:hover {
     height: 24px;
 }
 
-.nav-item svg {
-    width: 22px;
-    height: 22px;
-    stroke: #525252;
-}
-
 .nav-item span {
     font-family: 'Nunito', sans-serif;
     font-weight: 400;
-    font-size: 10px;
-    line-height: 14px;
+    font-size: 12px;
+    line-height: 16px;
     text-align: center;
     color: #525252;
-}
-
-.nav-item.active svg {
-    stroke: #171717;
 }
 
 .nav-item.active span {
     font-weight: 600;
     color: #171717;
+}
+
+.nav-item svg {
+    stroke: #525252;
 }
 
 .nav-item.active svg {
@@ -2599,6 +2421,39 @@ a:hover {
     background: #fff;
 }
 
+.app-avatar {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    border-radius: 50%;
+    background: #DBDBDB;
+    /* Grey background exactly like Instagram default */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.app-avatar svg {
+    width: 32px;
+    height: 32px;
+    stroke: #FFFFFF;
+    /* White icon */
+    fill: #FFFFFF;
+    /* White fill for the silhouette */
+}
+
+.app-author-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.app-author-details {
+    display: flex;
+    flex-direction: column;
+}
+
 .app-author-row {
     display: flex;
     align-items: center;
@@ -2626,7 +2481,7 @@ a:hover {
     padding: 8px 16px;
     background: #fff;
     border: 1px solid #E5E7EB;
-    border-radius: 20px;
+    border-radius: 8px;
     font-size: 12px;
     font-weight: 500;
     color: #1F2937;
@@ -2669,26 +2524,39 @@ a:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    padding: 10px 12px;
-    background: #F3F4F6;
+    gap: 8px;
+    padding: 6px 12px;
+    height: 36px;
     border: none;
-    border-radius: 25px;
-    font-size: 12px;
-    font-weight: 500;
-    color: #374151;
+    border-radius: 8px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    transition: all 0.2s ease;
 }
 
-.app-action-checked {
-    color: #374151;
+.app-action-map {
+    background: #E5E5E5 !important;
+    color: #171717 !important;
 }
 
-.app-action-checked svg {
-    color: #6B7280;
+.app-action-map svg {
+    stroke: #171717 !important;
+    width: 16px;
+    height: 16px;
+}
+
+.app-action-collection {
+    background: linear-gradient(135deg, #E91E8C 0%, #C4177A 100%) !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 2px 8px rgba(233, 30, 140, 0.3);
+}
+
+.app-action-collection svg {
+    stroke: #FFFFFF !important;
+    width: 16px;
+    height: 16px;
 }
 
 /* Day Navigation */
@@ -2696,7 +2564,8 @@ a:hover {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 16px;
+    padding: 8px 16px 0px;
+    /* Reduced top and bottom padding further */
     border-top: 1px solid #F3F4F6;
 }
 
@@ -2765,7 +2634,8 @@ a:hover {
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-x: contain;
-    padding: 8px 16px 16px;
+    padding: 0 16px 16px;
+    /* Removed top padding */
 }
 
 .app-stops-carousel::-webkit-scrollbar {
@@ -2775,12 +2645,13 @@ a:hover {
 .stops-track {
     display: flex;
     gap: 12px;
-    min-height: 180px;
+    min-height: auto;
+    /* Removed 180px min-height which caused square stretching */
 }
 
 .stop-card-empty {
-    min-width: 200px;
-    height: 170px;
+    min-width: 220px;
+    height: 176px;
     background: #F9FAFB;
     border-radius: 16px;
     display: flex;
@@ -2794,16 +2665,19 @@ a:hover {
 
 /* Individual Stop Card */
 .app-stop-card {
-    min-width: 160px;
-    max-width: 160px;
+    min-width: 220px;
+    max-width: 220px;
+    height: 176px;
+    /* 5:4 ratio for 220px width */
     background: #fff;
-    border-radius: 16px;
+    border-radius: 20px;
+    border: 2px solid #E5E7EB;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     scroll-snap-align: start;
     flex-shrink: 0;
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
 }
 
 .app-stop-card:hover {
@@ -2812,12 +2686,15 @@ a:hover {
 }
 
 .app-stop-card.tapped {
-    border: 2px solid #E91E8C;
+    border-color: #E91E8C;
+    /* Only change the color, not the width */
+    box-shadow: 0 4px 12px rgba(233, 30, 140, 0.15);
 }
 
 .stop-card-image {
     width: 100%;
-    height: 100px;
+    height: 116px;
+    /* Increased to match larger card size */
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     background-size: cover;
     background-position: center;
@@ -2828,43 +2705,57 @@ a:hover {
     position: absolute;
     top: 8px;
     left: 8px;
-    background: rgba(0, 0, 0, 0.6);
-    color: #fff;
-    font-size: 10px;
-    font-weight: 600;
-    padding: 4px 10px;
-    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.7);
+    /* Lowered from 0.95 */
+    backdrop-filter: blur(8px);
+    /* Increased blur for glass effect */
+    color: #171717;
+    font-size: 13px;
+    /* Bigger text */
+    font-weight: 700;
+    padding: 6px 14px;
+    /* Increased padding */
+    border-radius: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    margin: 0;
+    line-height: 1;
 }
 
 .stop-card-tapped-badge {
     position: absolute;
-    top: 8px;
-    right: 8px;
-    background: #E91E8C;
+    top: 0;
+    right: 0;
+    background: linear-gradient(135deg, #E91E8C 0%, #C4177A 100%);
     color: #fff;
-    font-size: 9px;
-    font-weight: 600;
-    padding: 4px 8px;
-    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 0 0 0 12px;
+    box-shadow: -2px 2px 6px rgba(233, 30, 140, 0.2);
+    z-index: 5;
 }
 
 .stop-card-content {
-    padding: 10px 12px;
+    padding: 8px 10px 6px;
+    /* Increased top padding to 8px for space between image and title */
 }
 
 .stop-card-title {
-    font-size: 12px;
-    font-weight: 600;
-    color: #1F2937;
+    font-size: 13px;
+    font-weight: 700;
+    color: #171717;
     margin-bottom: 2px;
+    /* Reduced from 4px */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .stop-card-desc {
-    font-size: 10px;
-    color: #9CA3AF;
+    font-size: 11px;
+    color: #6B7280;
+    line-height: 1.4;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

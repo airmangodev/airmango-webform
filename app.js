@@ -338,7 +338,7 @@ function setupCarouselSwipe() {
 }
 
 // ===== Media Upload per Stop =====
-async function handleStopMediaUpload(stopId, files) {
+function handleStopMediaUpload(stopId, files) {
     const stop = findStopById(stopId);
     if (!stop) return;
 
@@ -358,17 +358,14 @@ async function handleStopMediaUpload(stopId, files) {
         };
 
         stop.media.push(mediaItem);
-        renderDays();
-        renderMobilePreview();
-        updateStats();
-
-        // Wait for thumbnail to be ready before queuing upload
-        await generateThumbnail(mediaItem, file);
-
-        // Now add to queue and process
+        generateThumbnail(mediaItem, file);
         state.uploadQueue.push({ stopId, mediaId: mediaItem.id });
-        processUploadQueue();
     }
+
+    renderDays();
+    renderMobilePreview();
+    updateStats();
+    processUploadQueue();
 }
 
 function removeMediaFromStop(stopId, mediaId) {
@@ -405,98 +402,134 @@ function validateFile(file) {
 }
 
 function generateThumbnail(mediaItem, file) {
-    return new Promise((resolve) => {
-        const isVideo = file.type.startsWith('video/');
+    const isVideo = file.type.startsWith('video/');
 
-        if (isVideo) {
-            const video = document.createElement('video');
-            video.preload = 'metadata';
-            video.src = URL.createObjectURL(file);
-            video.onloadeddata = () => { video.currentTime = 1; };
-            video.onseeked = () => {
+    if (isVideo) {
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+        video.src = URL.createObjectURL(file);
+        video.onloadeddata = () => { video.currentTime = 1; };
+        video.onseeked = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 220;
+            canvas.height = 116;
+            const ctx = canvas.getContext('2d');
+            const scale = Math.max(220 / video.videoWidth, 116 / video.videoHeight);
+            const x = (220 - video.videoWidth * scale) / 2;
+            const y = (116 - video.videoHeight * scale) / 2;
+            ctx.drawImage(video, x, y, video.videoWidth * scale, video.videoHeight * scale);
+            mediaItem.thumbnail = canvas.toDataURL('image/jpeg', 0.7);
+            URL.revokeObjectURL(video.src);
+            renderDays();
+            renderMobilePreview();
+        };
+    } else {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
                 const canvas = document.createElement('canvas');
                 canvas.width = 220;
                 canvas.height = 116;
                 const ctx = canvas.getContext('2d');
-                const scale = Math.max(220 / video.videoWidth, 116 / video.videoHeight);
-                const x = (220 - video.videoWidth * scale) / 2;
-                const y = (116 - video.videoHeight * scale) / 2;
-                ctx.drawImage(video, x, y, video.videoWidth * scale, video.videoHeight * scale);
+                const scale = Math.max(220 / img.width, 116 / img.height);
+                const x = (220 - img.width * scale) / 2;
+                const y = (116 - img.height * scale) / 2;
+                ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
                 mediaItem.thumbnail = canvas.toDataURL('image/jpeg', 0.7);
-                URL.revokeObjectURL(video.src);
                 renderDays();
                 renderMobilePreview();
-                resolve();
             };
-            video.onerror = () => resolve(); // Still resolve even on error
-        } else {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = 220;
-                    canvas.height = 116;
-                    const ctx = canvas.getContext('2d');
-                    const scale = Math.max(220 / img.width, 116 / img.height);
-                    const x = (220 - img.width * scale) / 2;
-                    const y = (116 - img.height * scale) / 2;
-                    ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
-                    mediaItem.thumbnail = canvas.toDataURL('image/jpeg', 0.7);
-                    renderDays();
-                    renderMobilePreview();
-                    resolve();
-                };
-                img.onerror = () => resolve(); // Still resolve even on error
-                img.src = e.target.result;
-            };
-            reader.onerror = () => resolve(); // Still resolve even on error
-            reader.readAsDataURL(file);
-        }
-    });
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
 }
 
 // ===== Upload Queue Processing =====
 function processUploadQueue() {
-    while (state.uploadQueue.length > 0 && state.activeUploads < CONFIG.maxConcurrentUploads) {
+    if (state.activeUploads < CONFIG.maxConcurrentUploads && state.uploadQueue.length > 0) {
         const item = state.uploadQueue.shift();
-        uploadMedia(item.stopId, item.mediaId);
+        // Add a tiny delay to prevent race conditions with thumbnail generation and DOM updates
+        setTimeout(() => {
+            uploadMedia(item.stopId, item.mediaId);
+        }, 100);
     }
 }
 
-async function uploadMedia(stopId, mediaId) {
+async function uploadMedia(stopId, mediaId, retryCount = 0) {
     const stop = findStopById(stopId);
     if (!stop) return;
 
     const mediaItem = stop.media.find(m => m.id === mediaId);
-    if (!mediaItem || mediaItem.status === 'uploaded') return;
+    if (!mediaItem || mediaItem.status === 'uploaded') {
+        processUploadQueue(); // Move to next item if already done
+        return;
+    }
+
+    if (retryCount === 0) {
+        state.activeUploads++;
+    }
 
     mediaItem.status = 'uploading';
-    state.activeUploads++;
     renderDays();
 
     try {
+        console.log(`Uploading ${mediaItem.file.name} (Attempt ${retryCount + 1})...`);
         const formData = new FormData();
-        formData.append('file', mediaItem.file);
+        // Some servers expect data fields before the file field
         formData.append('stopId', stopId);
         formData.append('mediaId', mediaId);
+        formData.append('file', mediaItem.file);
+
+        // Set a timeout for the fetch
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000); // 1 minute timeout
 
         const response = await fetch(CONFIG.uploadWebhook, {
             method: 'POST',
-            body: formData
+            body: formData,
+            signal: controller.signal
         });
 
-        if (!response.ok) throw new Error('Upload failed');
+        clearTimeout(timeoutId);
 
-        const result = await response.json();
-        mediaItem.url = result.url || result.fileUrl || `uploaded_${mediaId}`;
+        if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+
+        const responseText = await response.text();
+        let result = {};
+        try {
+            if (responseText.trim()) {
+                result = JSON.parse(responseText);
+            }
+        } catch (e) {
+            console.warn('Webhook response was not valid JSON:', responseText);
+        }
+
+        mediaItem.url = result.url || result.fileUrl || `uploaded_${mediaId}_${Date.now()}`;
         mediaItem.status = 'uploaded';
         showToast('File uploaded successfully', 'success');
+
+        // Success: Decrement and move to next
+        state.activeUploads--;
+        renderDays();
+        updateStats();
+        updateSubmitButton();
+        processUploadQueue();
+
     } catch (error) {
-        console.error('Upload error:', error);
+        console.error(`Upload failed (Attempt ${retryCount + 1}):`, error);
+
+        if (retryCount < 2) {
+            console.log(`Retrying upload for ${mediaItem.file.name} in 1.5s...`);
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            return uploadMedia(stopId, mediaId, retryCount + 1);
+        }
+
+        // Final failure after retries
         mediaItem.status = 'error';
         showToast(`Upload failed: ${mediaItem.file.name}`, 'error');
-    } finally {
+
         state.activeUploads--;
         renderDays();
         updateStats();
@@ -693,7 +726,7 @@ function updateDayNavigation() {
 
     const currentDay = state.days[state.currentDayIndex];
     if (elements.dayNavLabel) elements.dayNavLabel.textContent = `Day ${currentDay.number} of ${totalDays}:`;
-    if (elements.dayNavTitle) elements.dayNavTitle.textContent = currentDay.title || 'No title';
+    if (elements.dayNavTitle) elements.dayNavTitle.textContent = currentDay.title || 'Day Plan';
 
     // Enable/disable based on scroll position and number of stops
     const hasStops = state.days.some(d => d.stops.length > 0);
