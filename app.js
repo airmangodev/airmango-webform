@@ -492,53 +492,44 @@ function generateThumbnail(mediaItem, file) {
 }
 
 // ===== Upload Queue Processing =====
-// ===== Upload Queue Processing =====
 function processUploadQueue() {
-    // Fill all available slots synchronously
-    while (state.activeUploads < CONFIG.maxConcurrentUploads && state.uploadQueue.length > 0) {
-        state.activeUploads++; // Reserve slot IMMEDIATELY
+    if (state.activeUploads < CONFIG.maxConcurrentUploads && state.uploadQueue.length > 0) {
         const item = state.uploadQueue.shift();
-
-        // Use timeout only to let UI breathe, but state is already safe
+        // Add a tiny delay to prevent race conditions with thumbnail generation and DOM updates
         setTimeout(() => {
-            uploadMedia(item.stopId, item.mediaId).catch(err => {
-                console.error("Critical upload error", err);
-                state.activeUploads--;
-                processUploadQueue();
-            });
-        }, 50);
+            uploadMedia(item.stopId, item.mediaId);
+        }, 100);
     }
 }
 
 async function uploadMedia(stopId, mediaId, retryCount = 0) {
     const stop = findStopById(stopId);
-    if (!stop) {
-        state.activeUploads--;
-        processUploadQueue();
+    if (!stop) return;
+
+    const mediaItem = stop.media.find(m => m.id === mediaId);
+    if (!mediaItem || mediaItem.status === 'uploaded') {
+        processUploadQueue(); // Move to next item if already done
         return;
     }
 
-    const mediaItem = stop.media.find(m => m.id === mediaId);
-    // If deleted or already done, just cleanup and move on
-    if (!mediaItem || mediaItem.status === 'uploaded') {
-        state.activeUploads--;
-        processUploadQueue();
-        return;
+    if (retryCount === 0) {
+        state.activeUploads++;
     }
 
     mediaItem.status = 'uploading';
-    // Only update UI if we are on the first attempt to reduce flicker
-    if (retryCount === 0) renderDays();
+    renderDays();
 
     try {
         console.log(`Uploading ${mediaItem.file.name} (Attempt ${retryCount + 1})...`);
         const formData = new FormData();
+        // Some servers expect data fields before the file field
         formData.append('stopId', stopId);
         formData.append('mediaId', mediaId);
         formData.append('file', mediaItem.file);
 
+        // Set a timeout for the fetch
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 60000);
+        const timeoutId = setTimeout(() => controller.abort(), 60000); // 1 minute timeout
 
         const response = await fetch(CONFIG.uploadWebhook, {
             method: 'POST',
@@ -576,10 +567,8 @@ async function uploadMedia(stopId, mediaId, retryCount = 0) {
 
         if (retryCount < 2) {
             console.log(`Retrying upload for ${mediaItem.file.name} in 1.5s...`);
-            // Do NOT decrement activeUploads, we are still using the slot
-            // Wait a bit then retry
-            setTimeout(() => uploadMedia(stopId, mediaId, retryCount + 1), 1500);
-            return;
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            return uploadMedia(stopId, mediaId, retryCount + 1);
         }
 
         // Final failure after retries
@@ -610,15 +599,7 @@ function renderDays() {
     elements.daysContainer.innerHTML = state.days.map(day => createDayHtml(day)).join('');
 
     state.days.forEach(day => {
-        day.stops.forEach(stop => {
-            const fileInput = document.getElementById(`media-input-${stop.id}`);
-            if (fileInput) {
-                fileInput.addEventListener('change', (e) => {
-                    handleStopMediaUpload(stop.id, e.target.files);
-                    e.target.value = '';
-                });
-            }
-        });
+        // No need to attach listeners here anymore, handled inline
     });
 }
 
@@ -691,7 +672,9 @@ function createStopHtml(stop) {
                         </svg>
                         <span>Add Photos/Videos</span>
                         <input type="file" id="media-input-${stop.id}" multiple 
-                            accept="image/jpeg,image/jpg,image/png,image/heic,video/mp4,video/quicktime,video/mov" hidden>
+                            accept="image/jpeg,image/jpg,image/png,image/heic,video/mp4,video/quicktime,video/mov" 
+                            onchange="handleStopMediaUpload('${stop.id}', this.files); this.value='';"
+                            hidden>
                     </label>
                     ${stop.media.length > 0 ? `
                         <div class="stop-media-grid">
