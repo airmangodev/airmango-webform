@@ -1,3 +1,42 @@
+/**
+ * ============================================================================
+ * AIRMANGO WEBFORM - STYLESHEET
+ * ============================================================================
+ * 
+ * TABLE OF CONTENTS
+ * -----------------
+ * 1.  CSS Variables (:root)                    ~Line 20
+ * 2.  Reset & Base Styles                      ~Line 60
+ * 3.  Header                                   ~Line 95
+ * 4.  Main Container & Layout                  ~Line 160
+ * 5.  Panels (Left/Right)                      ~Line 195
+ * 6.  Form Elements                            ~Line 245
+ * 7.  Upload Section                           ~Line 290
+ * 8.  Uploaded Files                           ~Line 380
+ * 9.  Consent Section                          ~Line 560
+ * 10. Days & Stops (Editor)                    ~Line 660
+ * 11. Buttons                                  ~Line 910
+ * 12. Submit Section                           ~Line 975
+ * 13. Toast Notifications                      ~Line 1040
+ * 14. Modals                                   ~Line 1110
+ * 15. Editor & Preview Panel Styles            ~Line 1225
+ * 16. Phone Frame Preview                      ~Line 1565
+ * 17. App Status Bar & Buttons                 ~Line 1660
+ * 18. App Cover Image & Slider                 ~Line 1745
+ * 19. Trip Info Section                        ~Line 1835
+ * 20. Day Navigation                           ~Line 2020
+ * 21. Stop Cards Carousel                      ~Line 2090
+ * 22. Bottom Navigation                        ~Line 2130
+ * 23. Cover Upload Zone (Editor)               ~Line 2200
+ * 24. Media Feed (Reels-Style)                 ~Line 2480
+ * 25. Stop Cards (Preview)                     ~Line 2970
+ * 26. Stops Detail Screen                      ~Line 3670
+ * 27. Hint Tooltips                            ~Line 3890
+ * 28. Responsive Media Queries                 ~Line 1180, 2300, 3280
+ * 
+ * ============================================================================
+ */
+
 /* ===== CSS Variables ===== */
 :root {
     --primary: #E91E8C;
@@ -174,21 +213,63 @@ a:hover {
     grid-template-columns: 1fr 1fr;
 }
 
-@media (max-width: 1200px) {
-    .main-container {
-        grid-template-columns: 360px 1fr;
-    }
-
-    .main-container.split-layout {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
-@media (max-width: 900px) {
+/* ===== Tablet Breakpoint (768px - 1200px) ===== */
+@media (min-width: 768px) and (max-width: 1200px) {
 
     .main-container,
     .main-container.split-layout {
         grid-template-columns: 1fr;
+        gap: 24px;
+        padding: 20px 24px 0;
+    }
+
+    .left-panel {
+        position: relative;
+        top: 0;
+    }
+
+    .right-panel,
+    .preview-panel {
+        display: none !important;
+    }
+
+    .phone-frame {
+        display: none !important;
+    }
+
+    /* Hide external hints on tablet - they don't make sense without side positioning */
+    .stop-cards-hint,
+    .main-feed-hint,
+    .trip-review-hint {
+        display: none !important;
+    }
+
+    .header-content {
+        gap: 16px;
+    }
+
+    .header-title {
+        font-size: 1.1rem;
+    }
+}
+
+/* ===== Mobile Breakpoint (< 768px) ===== */
+@media (max-width: 767px) {
+
+    .main-container,
+    .main-container.split-layout {
+        grid-template-columns: 1fr;
+        padding: 16px;
+    }
+
+    .preview-panel {
+        display: none;
+    }
+
+    .stop-cards-hint,
+    .main-feed-hint,
+    .trip-review-hint {
+        display: none !important;
     }
 }
 
@@ -2304,7 +2385,8 @@ a:hover {
     }
 }
 
-@media (max-width: 1200px) {
+/* Mobile-only: hide preview panel */
+@media (max-width: 767px) {
     .split-layout {
         grid-template-columns: 1fr !important;
     }
@@ -3281,9 +3363,8 @@ a:hover {
 /* Responsive for phone frame */
 @media (max-width: 1200px) {
     .phone-frame {
-        width: 280px;
-        height: 580px;
-        border-radius: 40px;
+        /* Preserving original 399x812 structure and using scale instead */
+        border-radius: 60px;
     }
 
     .phone-screen {
@@ -3914,12 +3995,12 @@ a:hover {
 .hint-content {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     background: linear-gradient(135deg, #E91E8C 0%, #C4177A 100%);
     color: #fff;
-    padding: 8px 14px;
-    border-radius: 24px;
-    box-shadow: 0 4px 12px rgba(233, 30, 140, 0.3);
+    padding: 8px 16px;
+    border-radius: 30px;
+    box-shadow: 0 6px 16px rgba(233, 30, 140, 0.3);
     animation: hintPulse 2s ease-in-out infinite;
     flex-direction: row-reverse;
 }
@@ -3937,15 +4018,15 @@ a:hover {
 }
 
 .hint-text {
-    font-size: 11px;
+    font-size: 15px;
     font-weight: 700;
     white-space: nowrap;
     letter-spacing: 0.02em;
 }
 
 .hint-arrow {
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
     stroke: #fff;
     flex-shrink: 0;
     transform: rotate(180deg);
@@ -3958,22 +4039,285 @@ a:hover {
     }
 }
 
-/* Adjust for mid-range screens */
 @media (min-width: 1201px) and (max-width: 1500px) {
     .stop-cards-hint {
         margin-left: 10px;
     }
 
     .hint-content {
-        padding: 8px 12px;
+        padding: 7px 14px;
     }
 
     .hint-text {
-        font-size: 11px;
+        font-size: 13px;
     }
 
     .hint-arrow {
-        width: 16px;
-        height: 16px;
+        width: 14px;
+        height: 14px;
     }
+}
+
+/* ===== Main Feed Hint (Left Side) ===== */
+.main-feed-hint {
+    position: absolute;
+    top: 22px;
+    /* Position at top of phone frame */
+    right: calc(100% + 5px);
+    /* Position outside to the left */
+    z-index: 150;
+    display: flex;
+    align-items: center;
+    animation: bounceLeft 2s infinite;
+    pointer-events: auto;
+    cursor: pointer;
+    opacity: 1;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    transform: none;
+}
+
+.main-feed-hint.hidden {
+    opacity: 0;
+    transform: translateX(-10px);
+    pointer-events: none;
+}
+
+.hint-content-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 30px;
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3);
+    animation: hintPulseLeft 2s ease-in-out infinite;
+    flex-direction: row;
+}
+
+@keyframes hintPulseLeft {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    50% {
+        transform: translateX(6px);
+    }
+}
+
+@keyframes bounceLeft {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    50% {
+        transform: translateX(-3px);
+    }
+}
+
+.hint-arrow-left {
+    width: 16px;
+    height: 16px;
+    stroke: #fff;
+    flex-shrink: 0;
+    /* Arrow points right (towards phone) */
+}
+
+/* Hide main-feed-hint on smaller screens where phone preview isn't visible */
+@media (max-width: 1200px) {
+    .main-feed-hint {
+        display: none;
+    }
+}
+
+/* ===== Trip Review Hint (Right side of reels) ===== */
+.trip-review-hint {
+    position: absolute;
+    bottom: 148px;
+    /* Aligned with Trip button in reels */
+    left: calc(100% + 15px);
+    /* Position outside to the right */
+    z-index: 150;
+    display: flex;
+    align-items: center;
+    animation: bounceRight 2s infinite;
+    pointer-events: auto;
+    cursor: pointer;
+    opacity: 1;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    transform: none;
+}
+
+.trip-review-hint.hidden {
+    opacity: 0;
+    transform: translateX(10px);
+    pointer-events: none;
+}
+
+/* Hide on smaller screens */
+@media (max-width: 1200px) {
+    .trip-review-hint {
+        display: none;
+    }
+}
+
+/* Adjust for mid-range screens */
+/* Adjust for mid-range screens */
+@media (min-width: 1201px) and (max-width: 1500px) {
+    .trip-review-hint {
+        margin-left: 10px;
+    }
+}
+
+/* ===== Preview Toggle Button (Tablet/Mobile) ===== */
+.preview-toggle-btn {
+    position: fixed;
+    bottom: 100px;
+    right: 24px;
+    display: none;
+    /* Hidden by default (desktop) */
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #E91E8C 0%, #C4177A 100%);
+    color: #fff;
+    border: none;
+    padding: 14px 24px;
+    border-radius: 50px;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: 'Nunito', sans-serif;
+    cursor: pointer;
+    z-index: 1000;
+    box-shadow: 0 8px 24px rgba(233, 30, 140, 0.4);
+    transition: all 0.3s ease;
+}
+
+.preview-toggle-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(233, 30, 140, 0.5);
+}
+
+.preview-toggle-btn:active {
+    transform: translateY(0);
+}
+
+.preview-toggle-btn svg {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+}
+
+/* Show preview button only on tablet and mobile */
+@media (max-width: 1200px) {
+    .preview-toggle-btn {
+        display: flex;
+    }
+}
+
+/* ===== Preview Modal ===== */
+.preview-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+.preview-modal[hidden] {
+    display: none;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.preview-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+}
+
+.preview-modal-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    overflow: hidden;
+    /* Strictly no scrolling */
+}
+
+/* Dynamically scale to fit both width and height, capped at 1.0x scale */
+.preview-modal-content .phone-frame {
+    display: block !important;
+    /* Use 98% of height/width to maximize resolution */
+    transform: scale(min(1.0, 98vh / 812px, 98vw / 399px)) !important;
+    transform-origin: center center;
+    margin: 0 !important;
+    box-shadow: 0 0 100px rgba(0, 0, 0, 0.5);
+}
+
+.preview-modal-close {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    width: 44px;
+    height: 44px;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2010;
+    transition: all 0.2s ease;
+}
+
+/* On mobile, make the close button even more integrated */
+@media (max-width: 767px) {
+    .preview-modal-close {
+        top: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.7);
+    }
+
+    .preview-modal-overlay {
+        backdrop-filter: none;
+        background: rgba(0, 0, 0, 0.95);
+    }
+}
+
+.preview-modal-close:hover {
+    transform: scale(1.1);
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.preview-modal-close svg {
+    width: 20px;
+    height: 20px;
 }

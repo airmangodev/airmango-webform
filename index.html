@@ -1,4 +1,36 @@
 <!DOCTYPE html>
+<!--
+============================================================================
+AIRMANGO WEBFORM - TRIP CONTENT UPLOAD
+============================================================================
+
+PAGE STRUCTURE
+--------------
+1.  HEAD: Meta, Fonts, Styles
+2.  HEADER: Logo, Title, Help Link
+3.  MAIN CONTAINER (Split Layout):
+    a.  LEFT PANEL (Editor):
+        - User Info Section (Name, Email)
+        - Trip Details Section (Cover, Title, Desc, Location)
+        - Organization Section (Days Container, Add Day)
+        - Legal Consent Section
+    b.  RIGHT PANEL (Preview):
+        - Phone Frame (375x812)
+        - Navigation Hints (Main Feed, Stop Cards, Trip Review)
+        - App Container:
+            * Cover Image Slider
+            * Trip Info Section
+            * Day Navigator
+            * Stops Carousel
+            * Stops Detail Screen (hidden)
+            * Media Feed/Reels (hidden)
+            * Bottom Navigation
+4.  FOOTER: Submit Section, Stats
+5.  MODALS: Success Modal, Toast Container
+6.  SCRIPTS: app.js
+
+============================================================================
+-->
 <html lang="en">
 
 <head>
@@ -146,10 +178,32 @@
                     <div class="phone-button-left volume-down"></div>
                     <div class="phone-button-right power"></div>
 
-                    <!-- Stop Cards Instruction Tooltip - Attached to phone frame -->
+                    <!-- Go to Main Feed Hint - LEFT side of phone frame -->
+                    <div class="main-feed-hint hidden" id="mainFeedHint" onclick="openMediaFeed()">
+                        <div class="hint-content-left">
+                            <span class="hint-text">Go to main feed</span>
+                            <svg class="hint-arrow-left" viewBox="0 0 24 24" fill="none">
+                                <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Stop Cards Instruction Tooltip - Attached to phone frame (RIGHT side) -->
                     <div class="stop-cards-hint hidden" id="stopCardsHint">
                         <div class="hint-content">
                             <span class="hint-text">Tap any stop to view all media</span>
+                            <svg class="hint-arrow" viewBox="0 0 24 24" fill="none">
+                                <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Go to Trip Preview Hint - RIGHT side (only in reels view) -->
+                    <div class="trip-review-hint hidden" id="tripReviewHint" onclick="closeMediaFeed()">
+                        <div class="hint-content">
+                            <span class="hint-text">Go to Trip Preview</span>
                             <svg class="hint-arrow" viewBox="0 0 24 24" fill="none">
                                 <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2"
                                     stroke-linecap="round" stroke-linejoin="round" />
@@ -462,6 +516,28 @@
             </div>
         </div>
     </footer>
+    <!-- Preview Toggle Button (Tablet/Mobile only) -->
+    <button class="preview-toggle-btn" id="previewToggleBtn" onclick="openPreviewModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="5" y="2" width="14" height="20" rx="3" />
+            <line x1="12" y1="18" x2="12" y2="18.01" stroke-width="3" stroke-linecap="round" />
+        </svg>
+        <span>Preview</span>
+    </button>
+
+    <!-- Preview Modal (Tablet/Mobile only) -->
+    <div class="preview-modal" id="previewModal" hidden>
+        <div class="preview-modal-overlay" onclick="closePreviewModal()"></div>
+        <div class="preview-modal-content" id="previewModalContent">
+            <button class="preview-modal-close" onclick="closePreviewModal()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+            </button>
+            <!-- Phone frame will be cloned here by JS -->
+        </div>
+    </div>
 
     <!-- Toast Notifications -->
     <div class="toast-container" id="toastContainer"></div>

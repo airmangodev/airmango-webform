@@ -1,6 +1,43 @@
 /**
- * Airmango Trip Content Upload Form
- * Exact Figma Design Implementation
+ * ============================================================================
+ * AIRMANGO TRIP CONTENT UPLOAD FORM
+ * ============================================================================
+ *
+ * TABLE OF CONTENTS
+ * -----------------
+ * 1.  Configuration (CONFIG)                          ~Line 30
+ * 2.  State Management                                ~Line 40
+ * 3.  DOM Elements                                    ~Line 60
+ * 4.  Initialize & Event Listeners                    ~Line 120
+ * 5.  Scroll/Navigation Helpers                       ~Line 175
+ * 6.  Cover Image Handling                            ~Line 190
+ * 7.  Days & Stops Management                         ~Line 280
+ *     - addDay, removeDay, updateDayTitle
+ *     - addStop, removeStop, updateStopTitle/Description
+ * 8.  Carousel Swipe Support                          ~Line 395
+ * 9.  Media Upload per Stop                           ~Line 510
+ *     - handleStopMediaUpload, removeMediaFromStop
+ *     - validateFile, generateThumbnail
+ * 10. Upload Queue Processing                         ~Line 645
+ * 11. Render Days (Editor Panel)                      ~Line 740
+ *     - renderDays, createDayHtml, createStopHtml
+ * 12. Render Mobile Preview                           ~Line 850
+ *     - updateMobilePreview, scrollCoverMedia
+ *     - renderStopCards, updateDayNavigation
+ * 13. Stats & Form Validation                         ~Line 1035
+ * 14. Form Submission                                 ~Line 1100
+ * 15. Toast Notifications                             ~Line 1170
+ * 16. Utility Functions                               ~Line 1190
+ * 17. Stops Detail Screen                             ~Line 1205
+ *     - openStopsDetailScreen, closeStopsDetailScreen
+ *     - renderStopsTabs, renderStopsMedia
+ * 18. Media Feed (Reels-Style)                        ~Line 1330
+ *     - openMediaFeed, closeMediaFeed
+ *     - renderFeedItems, navigateFeed
+ *     - setupFeedSwipe, toggleFeedVideo
+ * 19. Global Function Exports                         ~Line 1765
+ *
+ * ============================================================================
  */
 
 // ===== Configuration =====
@@ -73,6 +110,8 @@ const elements = {
     stopsTabs: document.getElementById('stopsTabs'),
     stopsMediaGallery: document.getElementById('stopsMediaGallery'),
     stopCardsHint: document.getElementById('stopCardsHint'),
+    mainFeedHint: document.getElementById('mainFeedHint'),
+    tripReviewHint: document.getElementById('tripReviewHint'),
 
     // Media Feed
     mediaFeed: document.getElementById('mediaFeed'),
@@ -1025,10 +1064,22 @@ function updateStats() {
     if (elements.totalStops) elements.totalStops.textContent = totalStops;
     if (elements.totalMedia) elements.totalMedia.textContent = totalMedia;
 
-    // Show instruction hint after first stop media is added
-    if (hasStopMedia && elements.stopCardsHint && elements.stopsDetailScreen?.hidden !== false) {
-        elements.stopCardsHint.classList.remove('hidden');
+    // Show hints only on main trip page (not in stops detail or media feed)
+    const isOnMainPage = elements.stopsDetailScreen?.hidden !== false &&
+        elements.mediaFeed?.hidden !== false;
+
+    // Show instruction hints after first stop media is added AND only on main page
+    if (hasStopMedia && isOnMainPage) {
+        if (elements.stopCardsHint) elements.stopCardsHint.classList.remove('hidden');
+        if (elements.mainFeedHint) elements.mainFeedHint.classList.remove('hidden');
+    } else {
+        // Hide hints if not on main page or no media
+        if (elements.stopCardsHint) elements.stopCardsHint.classList.add('hidden');
+        if (elements.mainFeedHint) elements.mainFeedHint.classList.add('hidden');
     }
+
+    // Always hide trip review hint when on main trip page
+    if (elements.tripReviewHint) elements.tripReviewHint.classList.add('hidden');
 }
 
 function updateSubmitButton() {
@@ -1186,9 +1237,12 @@ function openStopsDetailScreen(stopIndex) {
         elements.stopsDetailScreen.classList.remove('closing');
     }
 
-    // Hide the instruction hint
+    // Hide both instruction hints when entering stops detail screen
     if (elements.stopCardsHint) {
         elements.stopCardsHint.classList.add('hidden');
+    }
+    if (elements.mainFeedHint) {
+        elements.mainFeedHint.classList.add('hidden');
     }
 
     renderStopsTabs();
@@ -1388,6 +1442,17 @@ function openMediaFeed() {
         elements.mediaFeed.hidden = false;
     }
 
+    // Hide both instruction hints when entering media feed
+    if (elements.stopCardsHint) {
+        elements.stopCardsHint.classList.add('hidden');
+    }
+    if (elements.mainFeedHint) {
+        elements.mainFeedHint.classList.add('hidden');
+    }
+    if (elements.tripReviewHint) {
+        elements.tripReviewHint.classList.remove('hidden');
+    }
+
     // Set trip thumbnail
     if (elements.feedTripThumb && state.trip.coverImages.length > 0) {
         elements.feedTripThumb.style.backgroundImage = `url('${state.trip.coverImages[0].url}')`;
@@ -1430,8 +1495,16 @@ function closeMediaFeed() {
         elements.mediaFeed.hidden = true;
     }
 
+    // Hide trip review hint when leaving media feed
+    if (elements.tripReviewHint) {
+        elements.tripReviewHint.classList.add('hidden');
+    }
+
     // Cleanup: pause all videos
     cleanupOffscreenMedia();
+
+    // Re-check if hints should be shown (returning to main page)
+    updateStats();
 }
 
 function renderFeedItems() {
@@ -1720,6 +1793,55 @@ window.closeBlankScreen = closeBlankScreen;
 window.scrollCoverMedia = scrollCoverMedia;
 window.toggleFeedVideo = toggleFeedVideo;
 window.toggleFeedLike = toggleFeedLike;
+
+// ===== Preview Modal (Tablet/Mobile) =====
+function openPreviewModal() {
+    const modal = document.getElementById('previewModal');
+    const modalContent = document.getElementById('previewModalContent');
+    const originalFrame = document.querySelector('.phone-frame');
+
+    if (!modal || !modalContent || !originalFrame) return;
+
+    // Create a placeholder if it doesn't exist to keep the frame's place
+    let placeholder = document.getElementById('phoneFramePlaceholder');
+    if (!placeholder) {
+        placeholder = document.createElement('div');
+        placeholder.id = 'phoneFramePlaceholder';
+        placeholder.style.display = 'none';
+        originalFrame.parentNode.insertBefore(placeholder, originalFrame);
+    }
+
+    // Move the actual phone frame into the modal (preserves event listeners like swipe)
+    modalContent.appendChild(originalFrame);
+
+    // Show modal
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+}
+
+function closePreviewModal() {
+    const modal = document.getElementById('previewModal');
+    const placeholder = document.getElementById('phoneFramePlaceholder');
+    const phoneFrame = document.querySelector('.preview-modal-content .phone-frame');
+
+    if (!modal || !placeholder || !phoneFrame) return;
+
+    // Move frame back to its original location
+    placeholder.parentNode.insertBefore(phoneFrame, placeholder);
+
+    modal.hidden = true;
+    document.body.style.overflow = '';
+}
+
+// Close modal on escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !document.getElementById('previewModal').hidden) {
+        closePreviewModal();
+    }
+});
+
+window.openPreviewModal = openPreviewModal;
+window.closePreviewModal = closePreviewModal;
 
 // ===== Initialize on DOM load =====
 document.addEventListener('DOMContentLoaded', init);
