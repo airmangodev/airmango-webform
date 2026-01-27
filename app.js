@@ -42,7 +42,8 @@
 
 // ===== Configuration =====
 const CONFIG = {
-    uploadWebhook: 'https://n8n.restaurantreykjavik.com/webhook/media-upload',
+    mediaUploadWebhook: 'https://n8n.restaurantreykjavik.com/webhook/general-media-upload',
+    finalSubmissionWebhook: 'https://n8n.restaurantreykjavik.com/webhook/new-form-trip-submission',
     maxVideoSize: 1024 * 1024 * 1024,
     maxImageSize: 50 * 1024 * 1024,
     maxConcurrentUploads: 2,
@@ -129,11 +130,20 @@ const elements = {
     totalMedia: document.getElementById('totalMedia'),
 
     toastContainer: document.getElementById('toastContainer'),
-    successModal: document.getElementById('successModal')
+    successModal: document.getElementById('successModal'),
+
+    // Opt-in checkboxes
+    notifyLaunch: document.getElementById('notifyLaunch'),
+    travelArchitect: document.getElementById('travelArchitect')
 };
 
 // ===== Initialize =====
 function init() {
+    // Detect if loaded in an iframe for defensive UI adjustments
+    if (window.self !== window.top) {
+        document.body.classList.add('is-iframe');
+    }
+
     setupEventListeners();
     updateStats();
     updateSubmitButton();
@@ -227,18 +237,22 @@ function handleCoverImageSelect(e) {
             // For the full image in the preview, we can use the same data URL if it's an image
             // Or use URL.createObjectURL for better performance with large files
             const fullImageUrl = URL.createObjectURL(file);
+            const mediaId = generateId();
 
             state.trip.coverImages.push({
-                id: generateId(),
+                id: mediaId,
                 file: file,
                 url: fullImageUrl,
-                thumbnail: thumbnail || fullImageUrl
+                thumbnail: thumbnail || fullImageUrl,
+                status: 'pending'
             });
 
+            state.uploadQueue.push({ stopId: 'cover', mediaId: mediaId });
             renderCoverPreviews();
             updateMobilePreview();
             updateStats();
             updateSubmitButton();
+            processUploadQueue();
         } catch (err) {
             console.error('Error processing file:', file.name, err);
             showToast(`Failed to process ${file.name}`, 'error');
@@ -266,8 +280,9 @@ function renderCoverPreviews() {
     }
 
     elements.coverPreviewsContainer.innerHTML = state.trip.coverImages.map((img, index) => `
-        <div class="cover-preview-item">
+        <div class="cover-preview-item ${img.status || ''}">
             <img src="${img.thumbnail}" alt="Cover ${index + 1}">
+            ${img.status === 'uploading' ? '<div class="loading-spinner"></div>' : ''}
             <button type="button" class="cover-remove-btn" onclick="removeCoverImage(${index}, event)">&times;</button>
         </div>
     `).join('');
@@ -666,10 +681,16 @@ function processUploadQueue() {
 }
 
 async function uploadMedia(stopId, mediaId, retryCount = 0) {
-    const stop = findStopById(stopId);
-    if (!stop) return;
+    let mediaItem;
+    if (stopId === 'cover') {
+        mediaItem = state.trip.coverImages.find(m => m.id === mediaId);
+    } else {
+        const stop = findStopById(stopId);
+        if (stop) {
+            mediaItem = stop.media.find(m => m.id === mediaId);
+        }
+    }
 
-    const mediaItem = stop.media.find(m => m.id === mediaId);
     if (!mediaItem || mediaItem.status === 'uploaded') {
         processUploadQueue(); // Move to next item if already done
         return;
@@ -681,9 +702,10 @@ async function uploadMedia(stopId, mediaId, retryCount = 0) {
 
     mediaItem.status = 'uploading';
     renderDays();
+    if (stopId === 'cover') renderCoverPreviews();
 
     try {
-        console.log(`Uploading ${mediaItem.file.name} (Attempt ${retryCount + 1})...`);
+        console.log(`Uploading ${stopId === 'cover' ? 'Cover' : 'Stop'} Media: ${mediaItem.file.name} (Attempt ${retryCount + 1})...`);
         const formData = new FormData();
         // Some servers expect data fields before the file field
         formData.append('stopId', stopId);
@@ -694,7 +716,7 @@ async function uploadMedia(stopId, mediaId, retryCount = 0) {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 60000); // 1 minute timeout
 
-        const response = await fetch(CONFIG.uploadWebhook, {
+        const response = await fetch(CONFIG.mediaUploadWebhook, {
             method: 'POST',
             body: formData,
             signal: controller.signal
@@ -705,26 +727,37 @@ async function uploadMedia(stopId, mediaId, retryCount = 0) {
         if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
 
         const responseText = await response.text();
-        let result = {};
+        let remoteUrl = null;
         try {
             if (responseText.trim()) {
-                result = JSON.parse(responseText);
+                const result = JSON.parse(responseText);
+                // Handle array response: [{ fileUrl: "...", status: "success" }]
+                if (Array.isArray(result) && result.length > 0) {
+                    remoteUrl = result[0].fileUrl;
+                } else {
+                    remoteUrl = result.fileUrl || result.url;
+                }
             }
         } catch (e) {
-            console.warn('Webhook response was not valid JSON:', responseText);
+            console.warn('Webhook response was not valid JSON or array:', responseText);
         }
 
-        // Revoke the temporary object URL for the media item
-        if (mediaItem.url && mediaItem.url.startsWith('blob:')) {
-            URL.revokeObjectURL(mediaItem.url);
+        // Store the remote URL. We keep the local blob URL in state.url if it exists 
+        // to avoid flickering in the preview, but we'll use remoteUrl for final submission.
+        mediaItem.remoteUrl = remoteUrl;
+
+        // If we don't have a local URL (e.g. somehow lost), use the remote one
+        if (!mediaItem.url) {
+            mediaItem.url = remoteUrl || `uploaded_${mediaId}_${Date.now()}`;
         }
-        mediaItem.url = result.url || result.fileUrl || `uploaded_${mediaId}_${Date.now()}`;
+
         mediaItem.status = 'uploaded';
-        showToast('File uploaded successfully', 'success');
+        showToast(`${stopId === 'cover' ? 'Cover image' : 'File'} uploaded successfully`, 'success');
 
         // Success: Decrement and move to next
         state.activeUploads--;
         renderDays();
+        if (stopId === 'cover') renderCoverPreviews();
         updateStats();
         updateSubmitButton();
         processUploadQueue();
@@ -744,6 +777,7 @@ async function uploadMedia(stopId, mediaId, retryCount = 0) {
 
         state.activeUploads--;
         renderDays();
+        if (stopId === 'cover') renderCoverPreviews();
         updateStats();
         updateSubmitButton();
         processUploadQueue();
@@ -1090,9 +1124,8 @@ function updateSubmitButton() {
 function validateForm() {
     const userName = elements.userName?.value.trim();
     const userEmail = elements.userEmail?.value.trim();
-    const legalConsent = elements.legalConsent?.checked;
 
-    if (!userName || !userEmail || !legalConsent) return false;
+    if (!userName || !userEmail) return false;
     if (!isValidEmail(userEmail)) return false;
     if (state.trip.coverImages.length === 0) return false;
     if (!state.trip.title.trim()) return false;
@@ -1129,7 +1162,7 @@ async function handleSubmit() {
     try {
         const payload = buildSubmissionPayload();
 
-        const response = await fetch(CONFIG.uploadWebhook, {
+        const response = await fetch(CONFIG.finalSubmissionWebhook, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -1158,7 +1191,7 @@ function buildSubmissionPayload() {
             title: state.trip.title,
             description: state.trip.description,
             location: state.trip.location,
-            coverImages: state.trip.coverImages.map(img => img.url) // Send all cover URLs
+            coverImages: state.trip.coverImages.map(img => img.remoteUrl || img.url) // Send remote URLs
         },
         submittedAt: new Date().toISOString(),
         days: state.days.map(day => ({
@@ -1172,13 +1205,17 @@ function buildSubmissionPayload() {
                 description: stop.description,
                 media: stop.media.filter(m => m.status === 'uploaded').map(m => ({
                     id: m.id, // Include ID for reference if needed by backend
-                    url: m.url,
+                    url: m.remoteUrl || m.url,
                     fileName: m.file.name,
                     fileType: m.file.type,
                     fileSize: m.file.size
                 }))
             }))
-        }))
+        })),
+        preferences: {
+            notifyOnLaunch: elements.notifyLaunch?.checked ?? false,
+            interestedInTravelArchitect: elements.travelArchitect?.checked ?? false
+        }
     };
 }
 
@@ -1833,15 +1870,49 @@ function closePreviewModal() {
     document.body.style.overflow = '';
 }
 
-// Close modal on escape key
+window.openPreviewModal = openPreviewModal;
+window.closePreviewModal = closePreviewModal;
+
+// ===== Why Modal (Full Screen Content) =====
+function openWhyModal() {
+    const modal = document.getElementById('whyModal');
+    if (modal) {
+        modal.hidden = false;
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeWhyModal() {
+    const modal = document.getElementById('whyModal');
+    const iframe = document.getElementById('whyIframe');
+    if (modal) {
+        modal.hidden = true;
+        document.body.style.overflow = '';
+        // Reset iframe to top level page in case they navigated away
+        if (iframe) iframe.src = 'why.html';
+    }
+}
+
+// Close modals on escape key
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !document.getElementById('previewModal').hidden) {
-        closePreviewModal();
+    if (e.key === 'Escape') {
+        const previewModal = document.getElementById('previewModal');
+        if (previewModal && !previewModal.hidden) closePreviewModal();
+
+        const whyModal = document.getElementById('whyModal');
+        if (whyModal && !whyModal.hidden) closeWhyModal();
     }
 });
 
-window.openPreviewModal = openPreviewModal;
-window.closePreviewModal = closePreviewModal;
+window.openWhyModal = openWhyModal;
+window.closeWhyModal = closeWhyModal;
+
+// Listen for postMessage from iframe to close modal
+window.addEventListener('message', function (event) {
+    if (event.data === 'closeWhyModal') {
+        closeWhyModal();
+    }
+});
 
 // ===== Initialize on DOM load =====
 document.addEventListener('DOMContentLoaded', init);

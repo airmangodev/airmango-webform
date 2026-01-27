@@ -40,47 +40,7 @@
             line-height: 1.7;
         }
 
-        .video-section {
-            background: var(--bg-primary);
-            border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-lg);
-            overflow: hidden;
-            margin-bottom: 48px;
-        }
 
-        .video-container {
-            position: relative;
-            width: 100%;
-            padding-bottom: 56.25%;
-            /* 16:9 aspect ratio */
-            background: #000;
-        }
-
-        .video-container video {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        .video-info {
-            padding: 24px;
-            text-align: center;
-        }
-
-        .video-info h3 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-        }
-
-        .video-info p {
-            font-size: 0.9375rem;
-            color: var(--text-secondary);
-        }
 
         .content-section {
             margin-bottom: 40px;
@@ -325,7 +285,40 @@
                 font-size: 2rem;
             }
         }
+
+        /* Iframe Specific Overrides */
+        body.is-iframe .header,
+        body.is-iframe .header-link {
+            display: none !important;
+        }
+
+        body.is-iframe .why-page {
+            padding-top: 20px;
+        }
     </style>
+    <script>
+        // Detect if loaded in an iframe
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.self !== window.top) {
+                document.body.classList.add('is-iframe');
+
+                // Override all links to index.html to close the modal
+                var allLinks = document.querySelectorAll('a');
+                allLinks.forEach(function (link) {
+                    var href = link.getAttribute('href');
+                    if (href && href.indexOf('index.html') !== -1) {
+                        link.addEventListener('click', function (e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            // Use postMessage for reliable cross-frame communication
+                            window.parent.postMessage('closeWhyModal', '*');
+                            return false;
+                        }, true);
+                    }
+                });
+            }
+        });
+    </script>
 </head>
 
 <body>
@@ -351,19 +344,7 @@
             </p>
         </section>
 
-        <!-- Video Section -->
-        <section class="video-section">
-            <div class="video-container">
-                <video controls poster="" preload="metadata">
-                    <source src="assets/videos/why-we-use-your-content.mp4" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>
-            </div>
-            <div class="video-info">
-                <h3>Watch: How Your Content Makes a Difference</h3>
-                <p>A quick explanation of how we use your travel content to help others</p>
-            </div>
-        </section>
+
 
         <!-- How We Use Your Content -->
         <section class="content-section">
@@ -492,7 +473,7 @@
         <section class="cta-section">
             <h2>Ready to Share Your Iceland Adventure?</h2>
             <p>Upload your photos and videos now and help others discover the magic of Iceland.</p>
-            <a href="index.html" class="btn btn-primary">Start Uploading</a>
+            <a href="index.html" class="btn btn-primary" id="startUploadingBtn">Start Uploading</a>
         </section>
     </main>
 
