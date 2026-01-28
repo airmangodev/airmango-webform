@@ -51,6 +51,26 @@ const CONFIG = {
     allowedVideoTypes: ['video/mp4', 'video/quicktime', 'video/mov']
 };
 
+// ===== Clicky Analytics Helper =====
+// Tracks custom events in Clicky analytics dashboard
+function trackEvent(action, label = '', value = '') {
+    try {
+        if (typeof clicky !== 'undefined' && clicky.goal) {
+            // Clicky goal tracking: clicky.goal(goalName, revenue, noQueue)
+            clicky.goal(action);
+        }
+        if (typeof clicky !== 'undefined' && clicky.log) {
+            // Also log as a custom page view for more detail
+            const path = `/events/${action}${label ? '/' + label : ''}`;
+            clicky.log(path, action + (label ? ': ' + label : ''));
+        }
+        console.log(`[Analytics] ${action}${label ? ': ' + label : ''}${value ? ' (' + value + ')' : ''}`);
+    } catch (e) {
+        // Silently fail if Clicky is not loaded
+        console.log(`[Analytics] ${action}${label ? ': ' + label : ''} (Clicky not loaded)`);
+    }
+}
+
 // ===== State =====
 const state = {
     trip: {
@@ -260,6 +280,11 @@ function handleCoverImageSelect(e) {
     });
 
     elements.coverImageInput.value = '';
+
+    // Track analytics
+    if (filesToProcess.length > 0) {
+        trackEvent('upload_cover_image', '', `${filesToProcess.length} images`);
+    }
 }
 
 function renderCoverPreviews() {
@@ -326,6 +351,9 @@ function addDay() {
     renderMobilePreview();
     updateStats();
     updateSubmitButton();
+
+    // Track analytics
+    trackEvent('add_day', `Day ${state.dayCounter}`);
 }
 
 function removeDay(dayId) {
@@ -372,6 +400,9 @@ function addStop(dayId, type) {
     renderMobilePreview();
     updateStats();
     updateSubmitButton();
+
+    // Track analytics
+    trackEvent('add_stop', type, `Day ${day.number}`);
 }
 
 function removeStop(stopId) {
@@ -542,6 +573,9 @@ function handleStopMediaUpload(stopId, files) {
     const stop = findStopById(stopId);
     if (!stop) return;
 
+    let imageCount = 0;
+    let videoCount = 0;
+
     for (const file of files) {
         const validation = validateFile(file);
         if (!validation.valid) {
@@ -560,12 +594,20 @@ function handleStopMediaUpload(stopId, files) {
         stop.media.push(mediaItem);
         generateThumbnail(mediaItem, file);
         state.uploadQueue.push({ stopId, mediaId: mediaItem.id });
+
+        // Count media types
+        if (file.type.startsWith('image/')) imageCount++;
+        else if (file.type.startsWith('video/')) videoCount++;
     }
 
     renderDays();
     renderMobilePreview();
     updateStats();
     processUploadQueue();
+
+    // Track analytics
+    const mediaType = videoCount > 0 ? (imageCount > 0 ? 'mixed' : 'video') : 'image';
+    trackEvent('upload_stop_media', mediaType, `${files.length} files`);
 }
 
 function removeMediaFromStop(stopId, mediaId) {
@@ -1148,6 +1190,7 @@ function validateForm() {
 async function handleSubmit() {
     if (!validateForm()) {
         showToast('Please fill in all required fields', 'error');
+        trackEvent('form_validation_failed');
         return;
     }
 
@@ -1158,6 +1201,9 @@ async function handleSubmit() {
     submitBtn.disabled = true;
     if (btnText) btnText.hidden = true;
     if (btnLoader) btnLoader.hidden = false;
+
+    // Track submission attempt
+    trackEvent('form_submit_started', '', `${state.days.length} days, ${countTotalMedia()} media`);
 
     try {
         const payload = buildSubmissionPayload();
@@ -1171,14 +1217,31 @@ async function handleSubmit() {
         if (!response.ok) throw new Error('Submission failed');
 
         if (elements.successModal) elements.successModal.hidden = false;
+
+        // Track successful submission
+        trackEvent('form_submit_success', state.trip.title, `${state.days.length} days`);
     } catch (error) {
         console.error('Submit error:', error);
         showToast('Submission failed. Please try again.', 'error');
         submitBtn.disabled = false;
+
+        // Track failed submission
+        trackEvent('form_submit_error', error.message);
     } finally {
         if (btnText) btnText.hidden = false;
         if (btnLoader) btnLoader.hidden = true;
     }
+}
+
+// Helper to count total media for analytics
+function countTotalMedia() {
+    let count = state.trip.coverImages.length;
+    for (const day of state.days) {
+        for (const stop of day.stops) {
+            count += stop.media.length;
+        }
+    }
+    return count;
 }
 
 function buildSubmissionPayload() {
@@ -1879,6 +1942,9 @@ function openWhyModal() {
     if (modal) {
         modal.hidden = false;
         document.body.style.overflow = 'hidden';
+
+        // Track analytics
+        trackEvent('open_why_modal');
     }
 }
 
