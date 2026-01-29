@@ -4636,3 +4636,12 @@ body.is-iframe .header {
     width: 20px;
     height: 20px;
 }
+
+/* ===== Stop Media Hint ===== */
+.stop-media-hint {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 8px;
+    font-style: italic;
+    text-align: center;
+}

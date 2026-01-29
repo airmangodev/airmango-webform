@@ -387,6 +387,13 @@ function addStop(dayId, type) {
     const day = state.days.find(d => d.id === dayId);
     if (!day) return;
 
+    // Check if day already has an accommodation - it must be the last stop
+    const hasAccommodation = day.stops.some(s => s.type === 'accommodation');
+    if (hasAccommodation && type !== 'accommodation') {
+        showToast('Accommodation should be the last stop of the day. Remove it first to add more activities.', 'error');
+        return;
+    }
+
     const stop = {
         id: generateId(),
         type: type,
@@ -919,6 +926,7 @@ function createStopHtml(stop) {
                             onchange="handleStopMediaUpload('${stop.id}', this.files); this.value='';"
                             hidden>
                     </label>
+                    <p class="stop-media-hint">Upload all photos and videos from this stop — the more, the better!</p>
                     ${stop.media.length > 0 ? `
                         <div class="stop-media-grid">
                             ${stop.media.map(m => `
