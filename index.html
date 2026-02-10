@@ -57,32 +57,10 @@ PAGE STRUCTURE
                 <span class="logo-text">Airmango</span>
             </a>
             <h1 class="header-title">Preview Your Iceland Trip</h1>
-            <button type="button" class="header-link-btn" onclick="openWhyModal()">Why we use your content?</button>
         </div>
     </header>
 
-    <!-- Why Scroll Modal (Full Screen) -->
-    <div class="full-modal" id="whyModal" hidden>
-        <div class="full-modal-header">
-            <div class="header-content">
-                <div class="logo">
-                    <img src="assets/images/Logo.png" alt="Airmango" class="logo-icon">
-                    <span class="logo-text">Airmango</span>
-                </div>
-                <h2 class="full-modal-title">Why We Use Your Content</h2>
-                <button type="button" class="full-modal-close" onclick="closeWhyModal()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <line x1="18" y1="6" x2="6" y2="18" />
-                        <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                    <span>Close</span>
-                </button>
-            </div>
-        </div>
-        <div class="full-modal-body">
-            <iframe src="why.html" id="whyIframe" frameborder="0"></iframe>
-        </div>
-    </div>
+
 
     <!-- Main Container - 50/50 Split -->
     <main class="main-container split-layout">
@@ -168,49 +146,74 @@ PAGE STRUCTURE
                     </div>
                 </section>
 
-                <!-- Content Sharing Notes -->
+                <!-- Legal Consent Section -->
                 <section class="consent-section sharing-section">
+                    <h2 class="section-title">Legal Agreements</h2>
 
-                    <div class="sharing-checklist">
-                        <div class="checklist-item">
-                            <svg class="check-icon" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd"
-                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                    clip-rule="evenodd" />
-                            </svg>
-                            <span>I created this content myself</span>
-                        </div>
-                        <div class="checklist-item">
-                            <svg class="check-icon" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd"
-                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                    clip-rule="evenodd" />
-                            </svg>
-                            <span>Airmango can feature this in their app</span>
-                        </div>
-                        <div class="checklist-item">
-                            <svg class="check-icon" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd"
-                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                    clip-rule="evenodd" />
-                            </svg>
-                            <span>I'm 18+ years old</span>
-                        </div>
+                    <div class="consent-checklist">
+                        <label class="optin-checkbox">
+                            <input type="checkbox" id="consentOwnership" class="consent-cb">
+                            <span class="checkmark"></span>
+                            <span class="optin-text">
+                                <span>I created this content myself and own all rights to it</span>
+                            </span>
+                        </label>
+
+                        <label class="optin-checkbox">
+                            <input type="checkbox" id="consentLicense" class="consent-cb">
+                            <span class="checkmark"></span>
+                            <span class="optin-text">
+                                <span>I agree to the <a href="https://www.buubble.com/trip-agreement/" target="_blank"
+                                        onclick="event.stopPropagation()">Content License Terms</a> &mdash; granting
+                                    Airmango Holdings Inc. worldwide rights to use this content on their apps, websites,
+                                    and social media channels</span>
+                            </span>
+                        </label>
+
+                        <label class="optin-checkbox">
+                            <input type="checkbox" id="consentAge" class="consent-cb">
+                            <span class="checkmark"></span>
+                            <span class="optin-text">
+                                <span>I confirm I am 18+ years old</span>
+                            </span>
+                        </label>
+
+                        <label class="optin-checkbox">
+                            <input type="checkbox" id="consentPeople" class="consent-cb">
+                            <span class="checkmark"></span>
+                            <span class="optin-text">
+                                <span>Any recognizable people in my content have given their consent</span>
+                            </span>
+                        </label>
                     </div>
 
                     <!-- Opt-in Options -->
-                    <div class="optin-section">
-                        <h4>Stay Connected</h4>
+                    <div class="optin-section" style="margin-top: 16px;">
                         <label class="optin-checkbox">
                             <input type="checkbox" id="notifyLaunch">
                             <span class="checkmark"></span>
                             <span class="optin-text">
                                 <strong>Notify me when we go live!</strong>
-                                <small>Get an email when your trip is published in the app</small>
                             </span>
                         </label>
-
                     </div>
+                </section>
+
+                <!-- Submit Section (inside left panel) -->
+                <section class="submit-inline-section">
+                    <p class="submit-stats" id="submitStatsInline">
+                        <span id="totalDaysInline">0</span> days &bull; <span id="totalStopsInline">0</span> stops
+                        &bull; <span id="totalMediaInline">0</span> media files
+                    </p>
+                    <button type="button" class="btn btn-submit" id="submitBtn" disabled>
+                        <span class="btn-text">Submit for Pre-Approval</span>
+                        <span class="btn-loader" hidden>
+                            <svg class="spinner" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none"
+                                    stroke-dasharray="31.4 31.4" stroke-linecap="round" />
+                            </svg>
+                        </span>
+                    </button>
                 </section>
             </div>
         </aside>
@@ -542,29 +545,7 @@ PAGE STRUCTURE
         </section>
     </main>
 
-    <!-- Submit Section -->
-    <footer class="submit-section">
-        <div class="submit-content">
-            <div class="submit-info">
-                <p class="submit-stats" id="submitStats">
-                    <span id="totalDays">0</span> days • <span id="totalStops">0</span> stops • <span
-                        id="totalMedia">0</span> media files
-                </p>
-            </div>
-            <div class="submit-actions" style="display: flex; gap: 16px; align-items: center;">
-                <button type="button" class="header-link-btn" onclick="openWhyModal()">Why we use your content?</button>
-                <button type="button" class="btn btn-submit" id="submitBtn" disabled>
-                    <span class="btn-text">Submit for Pre-Approval</span>
-                    <span class="btn-loader" hidden>
-                        <svg class="spinner" viewBox="0 0 24 24">
-                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none"
-                                stroke-dasharray="31.4 31.4" stroke-linecap="round" />
-                        </svg>
-                    </span>
-                </button>
-            </div>
-        </div>
-    </footer>
+
     <!-- Preview Toggle Button (Tablet/Mobile only) -->
     <button class="preview-toggle-btn" id="previewToggleBtn" onclick="openPreviewModal()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

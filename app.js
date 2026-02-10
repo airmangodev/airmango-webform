@@ -154,7 +154,18 @@ const elements = {
 
     // Opt-in checkboxes
     notifyLaunch: document.getElementById('notifyLaunch'),
-    travelArchitect: document.getElementById('travelArchitect')
+    travelArchitect: document.getElementById('travelArchitect'),
+
+    // Consent checkboxes
+    consentOwnership: document.getElementById('consentOwnership'),
+    consentLicense: document.getElementById('consentLicense'),
+    consentAge: document.getElementById('consentAge'),
+    consentPeople: document.getElementById('consentPeople'),
+
+    // Inline stats (inside left panel)
+    totalDaysInline: document.getElementById('totalDaysInline'),
+    totalStopsInline: document.getElementById('totalStopsInline'),
+    totalMediaInline: document.getElementById('totalMediaInline')
 };
 
 // ===== Initialize =====
@@ -193,6 +204,11 @@ function setupEventListeners() {
     });
     elements.userEmail?.addEventListener('input', updateSubmitButton);
     elements.legalConsent?.addEventListener('change', updateSubmitButton);
+
+    // Consent checkboxes
+    document.querySelectorAll('.consent-cb').forEach(cb => {
+        cb.addEventListener('change', updateSubmitButton);
+    });
 
     elements.coverUploadZone?.addEventListener('click', () => elements.coverImageInput.click());
     elements.coverImageInput?.addEventListener('change', handleCoverImageSelect);
@@ -1148,6 +1164,11 @@ function updateStats() {
     if (elements.totalStops) elements.totalStops.textContent = totalStops;
     if (elements.totalMedia) elements.totalMedia.textContent = totalMedia;
 
+    // Also update inline stats (left panel)
+    if (elements.totalDaysInline) elements.totalDaysInline.textContent = totalDays;
+    if (elements.totalStopsInline) elements.totalStopsInline.textContent = totalStops;
+    if (elements.totalMediaInline) elements.totalMediaInline.textContent = totalMedia;
+
     // Show hints only on main trip page (not in stops detail or media feed)
     const isOnMainPage = elements.stopsDetailScreen?.hidden !== false &&
         elements.mediaFeed?.hidden !== false;
@@ -1190,6 +1211,12 @@ function validateForm() {
     }
 
     if (state.activeUploads > 0) return false;
+
+    // Require all 4 consent checkboxes
+    if (!elements.consentOwnership?.checked) return false;
+    if (!elements.consentLicense?.checked) return false;
+    if (!elements.consentAge?.checked) return false;
+    if (!elements.consentPeople?.checked) return false;
 
     return true;
 }
@@ -1286,6 +1313,13 @@ function buildSubmissionPayload() {
         preferences: {
             notifyOnLaunch: elements.notifyLaunch?.checked ?? false,
             interestedInTravelArchitect: elements.travelArchitect?.checked ?? false
+        },
+        consent: {
+            ownershipConfirmed: elements.consentOwnership?.checked ?? false,
+            licenseAgreed: elements.consentLicense?.checked ?? false,
+            ageConfirmed: elements.consentAge?.checked ?? false,
+            peopleConsentGiven: elements.consentPeople?.checked ?? false,
+            consentTimestamp: new Date().toISOString()
         }
     };
 }
@@ -1944,47 +1978,14 @@ function closePreviewModal() {
 window.openPreviewModal = openPreviewModal;
 window.closePreviewModal = closePreviewModal;
 
-// ===== Why Modal (Full Screen Content) =====
-function openWhyModal() {
-    const modal = document.getElementById('whyModal');
-    if (modal) {
-        modal.hidden = false;
-        document.body.style.overflow = 'hidden';
-
-        // Track analytics
-        trackEvent('open_why_modal');
-    }
-}
-
-function closeWhyModal() {
-    const modal = document.getElementById('whyModal');
-    const iframe = document.getElementById('whyIframe');
-    if (modal) {
-        modal.hidden = true;
-        document.body.style.overflow = '';
-        // Reset iframe to top level page in case they navigated away
-        if (iframe) iframe.src = 'why.html';
-    }
-}
+// ===== Why Modal (Removed) =====
+// Why modal and why.html have been removed.
 
 // Close modals on escape key
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         const previewModal = document.getElementById('previewModal');
         if (previewModal && !previewModal.hidden) closePreviewModal();
-
-        const whyModal = document.getElementById('whyModal');
-        if (whyModal && !whyModal.hidden) closeWhyModal();
-    }
-});
-
-window.openWhyModal = openWhyModal;
-window.closeWhyModal = closeWhyModal;
-
-// Listen for postMessage from iframe to close modal
-window.addEventListener('message', function (event) {
-    if (event.data === 'closeWhyModal') {
-        closeWhyModal();
     }
 });
 

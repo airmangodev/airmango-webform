@@ -885,6 +885,50 @@ a:hover {
     border-top: 1px solid var(--border);
 }
 
+/* ===== Consent Checklist (Interactive Checkboxes) ===== */
+.consent-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    margin-bottom: 8px;
+}
+
+.consent-checklist .optin-checkbox {
+    margin-bottom: 0;
+}
+
+.consent-checklist .optin-text a {
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+.consent-checklist .optin-text a:hover {
+    color: var(--primary-dark);
+}
+
+/* ===== Submit Inline Section (inside left panel) ===== */
+.submit-inline-section {
+    padding: 20px 0 8px;
+    margin-top: 8px;
+    border-top: 1px solid var(--border);
+    text-align: right;
+}
+
+.submit-inline-section .submit-stats {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+}
+
+.submit-inline-section .btn-submit {
+    width: auto;
+}
+
 /* ===== Right Panel - Organization ===== */
 .organization-header {
     display: flex;
