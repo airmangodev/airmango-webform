@@ -180,7 +180,11 @@ function init() {
     renderMobilePreview();
 
     // Warn before page refresh/close if there's unsaved data
+    // Warn before page refresh/close if there's unsaved data
     window.addEventListener('beforeunload', (e) => {
+        // Skip check if successfully submitted
+        if (state.isSubmitted) return;
+
         const hasData = state.days.length > 0 ||
             state.trip.coverImages.length > 0 ||
             elements.userName?.value ||
@@ -1187,6 +1191,9 @@ function updateStats() {
 }
 
 function updateSubmitButton() {
+    // Reset submitted flag on any change
+    state.isSubmitted = false;
+
     // We no longer disable the button so users can click and see validation errors
     // const isValid = validateForm(false);
     // if (elements.submitBtn) elements.submitBtn.disabled = !isValid;
@@ -1304,6 +1311,9 @@ async function handleSubmit() {
         if (typeof clearFormProgress === 'function') {
             clearFormProgress().catch(err => console.warn('[Submit] Clear progress failed:', err));
         }
+
+        // Mark as submitted to bypass unload warning
+        state.isSubmitted = true;
 
         if (elements.successModal) elements.successModal.hidden = false;
 
