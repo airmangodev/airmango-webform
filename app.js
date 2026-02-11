@@ -1775,6 +1775,35 @@ function toggleFeedLike() {
     }
 }
 
+// Global handler for video errors (Mixed Content, etc.)
+window.handleFeedVideoError = function (videoEl) {
+    if (!videoEl) return;
+    videoEl.style.display = 'none';
+
+    // Hide the play button if it exists sibling
+    const btn = videoEl.nextElementSibling;
+    if (btn && btn.classList.contains('video-control-btn')) {
+        btn.style.display = 'none';
+    }
+
+    // Insert error message
+    const parent = videoEl.parentElement;
+    if (parent) {
+        // Check if error already shown to avoid duplicates
+        if (parent.querySelector('.video-error-msg')) return;
+
+        parent.insertAdjacentHTML('beforeend', `
+            <div class="video-error-msg" style="color: #ef4444; font-size: 12px; text-align: center; padding: 20px; background: rgba(0,0,0,0.8); height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: absolute; inset: 0;">
+                <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" fill="none" class="mb-2" style="margin-bottom:8px">
+                    <path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span>Video Blocked</span>
+                <span style="font-size: 10px; opacity: 0.8; margin-top: 4px;">Server needs HTTPS</span>
+            </div>
+        `);
+    }
+};
+
 function renderFeedItem(container, item) {
     if (!container) {
         console.warn('Feed container is null');
@@ -1804,7 +1833,7 @@ function renderFeedItem(container, item) {
 
     if (isVideo) {
         container.innerHTML = `
-            <video src="${mediaUrl}" autoplay muted playsinline loop preload="auto" class="feed-video" onerror="this.style.display='none'; this.nextElementSibling.style.display='none'; this.parentElement.insertAdjacentHTML('beforeend', '<div style=\'color: #ef4444; font-size: 12px; text-align: center; padding: 20px; background: rgba(0,0,0,0.8); height: 100%; display: flex; align-items: center; justify-content: center;\'>Video blocked by browser protection.<br>Server must use HTTPS.</div>');"></video>
+            <video src="${mediaUrl}" autoplay muted playsinline loop preload="auto" class="feed-video" onerror="window.handleFeedVideoError(this)"></video>
             <button class="video-control-btn playing" onclick="toggleFeedVideo(this)">
                 <svg class="play-icon" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
                 <svg class="pause-icon" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
@@ -2066,6 +2095,11 @@ window.app = {
         if (elements.tripDescription) elements.tripDescription.value = '';
         const loc = document.getElementById('tripLocation');
         if (loc) loc.value = 'Iceland';
+
+        // Set Author Name from Auth
+        const userName = (window.auth && window.auth.user && window.auth.user.user_metadata?.full_name) || 'Traveler';
+        if (elements.appAuthorName) elements.appAuthorName.textContent = userName;
+        if (elements.feedUsername) elements.feedUsername.textContent = userName;
 
         // Clear Cover Images
         if (elements.coverPreviewsContainer) {
