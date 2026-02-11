@@ -1775,6 +1775,15 @@ function toggleFeedLike() {
     }
 }
 
+// Helper for High-Res Thumbnails (Vide Fallback)
+function getHighResThumbnail(url) {
+    if (!url) return '';
+    if (url.startsWith('data:')) return url;
+    if (url.startsWith('blob:')) return url;
+    // Use 1200w for high clarity
+    return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=1200&output=webp&q=80`;
+}
+
 // Global handler for video errors (Mixed Content, etc.)
 window.handleFeedVideoError = function (videoEl) {
     if (!videoEl) return;
@@ -1861,7 +1870,7 @@ function renderFeedItem(container, item) {
     if (isVideo) {
         container.innerHTML = `
             <video src="${mediaUrl}" 
-                data-fallback-src="${getSecureUrl(item.thumbnail)}" 
+                data-fallback-src="${getHighResThumbnail(item.thumbnail)}" 
                 autoplay muted playsinline loop preload="auto" class="feed-video" 
                 onerror="window.handleFeedVideoError(this)"></video>
             <button class="video-control-btn playing" onclick="toggleFeedVideo(this)">
