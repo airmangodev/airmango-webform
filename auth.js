@@ -182,7 +182,13 @@ function onAuthSuccess() {
         authElements.dashboardUserEmail.textContent = authState.user.email;
     }
     // Load Dashboard instead of restoring single trip
-    loadDashboard();
+    // Check for last open trip to restore session
+    const lastTripId = localStorage.getItem('lastOpenTripId');
+    if (lastTripId) {
+        window.openTrip(lastTripId);
+    } else {
+        loadDashboard();
+    }
     // Start auto-save listener (but it will only save if currentTripId is set)
     startAutoSaveListener();
 }
@@ -199,6 +205,7 @@ async function loadDashboard(reset = true) {
 
     // Reset pagination if needed
     if (reset) {
+        localStorage.removeItem('lastOpenTripId'); // Clear persistence on explicit dashboard load
         authState.currentPage = 0;
         authState.hasMoreTrips = true;
         if (authElements.tripsGrid) authElements.tripsGrid.innerHTML = '<div class="dashboard-loading">Loading trips...</div>';
@@ -385,6 +392,7 @@ window.openTrip = async function (tripId) {
         if (error) throw error;
         if (data) {
             authState.currentTripId = tripId;
+            localStorage.setItem('lastOpenTripId', tripId); // Persist session
 
             // Switch to Editor View
             if (authElements.dashboardView) authElements.dashboardView.hidden = true;
@@ -441,6 +449,7 @@ async function createNewTrip() {
         if (data) {
             // Open the new trip
             authState.currentTripId = data.id;
+            localStorage.setItem('lastOpenTripId', data.id); // Persist session
 
             // Switch to Editor View
             if (authElements.dashboardView) authElements.dashboardView.hidden = true;
@@ -475,7 +484,7 @@ function startAutoSaveListener() {
 
 function debouncedSave() {
     if (authState.saveTimeout) clearTimeout(authState.saveTimeout);
-    authState.saveTimeout = setTimeout(() => saveFormProgress(), 3000); // 3s debounce
+    authState.saveTimeout = setTimeout(() => saveFormProgress(), 1000); // 1s instant debounce
 }
 
 async function saveFormProgress(force = false) {

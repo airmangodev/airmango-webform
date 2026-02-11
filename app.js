@@ -827,7 +827,9 @@ async function uploadMedia(stopId, mediaId, retryCount = 0) {
         renderDays();
         if (stopId === 'cover') renderCoverPreviews();
         updateStats();
+        updateStats();
         updateSubmitButton();
+        if (window.auth && window.auth.saveCurrentTrip) window.auth.saveCurrentTrip(); // Instant save after upload
         processUploadQueue();
 
     } catch (error) {
@@ -1802,7 +1804,7 @@ function renderFeedItem(container, item) {
 
     if (isVideo) {
         container.innerHTML = `
-            <video src="${mediaUrl}" autoplay muted playsinline loop preload="auto" class="feed-video"></video>
+            <video src="${mediaUrl}" autoplay muted playsinline loop preload="auto" class="feed-video" onerror="this.style.display='none'; this.nextElementSibling.style.display='none'; this.parentElement.insertAdjacentHTML('beforeend', '<div style=\'color: #ef4444; font-size: 12px; text-align: center; padding: 20px; background: rgba(0,0,0,0.8); height: 100%; display: flex; align-items: center; justify-content: center;\'>Video blocked by browser protection.<br>Server must use HTTPS.</div>');"></video>
             <button class="video-control-btn playing" onclick="toggleFeedVideo(this)">
                 <svg class="play-icon" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
                 <svg class="pause-icon" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
