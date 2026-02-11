@@ -1593,46 +1593,21 @@ function formatLikeCount(num) {
 function collectFeaturedMedia() {
     const featured = [];
 
-    // Collect all media from all stops, marking first 2 per stop as featured by default
+    // Collect all media from all stops
     state.days.forEach(day => {
         day.stops.forEach(stop => {
             stop.media.forEach((m, idx) => {
-                // Default: ALL media are featured (shown in feed)
-                if (m.featured === undefined) {
-                    m.featured = true;
-                }
-
-                if (!m.featured) return;
-
-                // PRIORITY: Use local URLs (blob: or data:) over server URLs
-                // Server URLs won't work for preview - we need local data
-                let mediaUrl = null;
-
-                // 1. Best: create from file (always works)
-                if (m.file) {
-                    mediaUrl = URL.createObjectURL(m.file);
-                }
-                // 2. Fallback: use thumbnail if it's local
-                else if (m.thumbnail && (m.thumbnail.startsWith('data:') || m.thumbnail.startsWith('blob:'))) {
-                    mediaUrl = m.thumbnail;
-                }
-                // 3. Use url only if it's local (not a server URL)
-                else if (m.url && (m.url.startsWith('blob:') || m.url.startsWith('data:'))) {
-                    mediaUrl = m.url;
-                }
-
-                if (mediaUrl) {
+                // Ensure we have a valid URL (local or remote)
+                if (m.url) {
                     featured.push({
                         ...m,
-                        url: mediaUrl,
+                        url: m.url,
                         stopTitle: stop.title,
-                        stopDescription: stop.description,
+                        stopDescription: stop.description || stop.title,
                         stopType: stop.type,
-                        likes: generateRandomLikes(),
-                        liked: false
+                        likes: m.likes || generateRandomLikes(),
+                        liked: m.liked || false
                     });
-                } else {
-                    console.warn('No local URL available for media:', m.id);
                 }
             });
         });
@@ -1827,8 +1802,8 @@ function renderFeedItem(container, item) {
 
     if (isVideo) {
         container.innerHTML = `
-            <video src="${mediaUrl}" muted playsinline loop preload="auto"></video>
-            <button class="video-control-btn paused" onclick="toggleFeedVideo(this)">
+            <video src="${mediaUrl}" autoplay muted playsinline loop preload="auto" class="feed-video"></video>
+            <button class="video-control-btn playing" onclick="toggleFeedVideo(this)">
                 <svg class="play-icon" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
                 <svg class="pause-icon" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
             </button>
@@ -2153,15 +2128,27 @@ window.app = {
                     description: stop.description || '',
                     media: (stop.media || [])
                         .filter(m => m.url && !m.url.startsWith('blob:'))
-                        .map(m => ({
-                            id: m.id || generateId(),
-                            url: getSecureUrl(m.url),
-                            remoteUrl: getSecureUrl(m.url),
-                            thumbnail: getSecureUrl(m.url),
-                            status: 'uploaded',
-                            fileName: m.fileName || 'media',
-                            file: { name: m.fileName || 'media', type: m.fileType || '' }
-                        }))
+                        .map(m => {
+                            // Detect if video
+                            const isVideo = (m.fileType && m.fileType.startsWith('video')) || (m.fileName && m.fileName.match(/\.(mp4|mov|webm)$/i));
+                            const secureUrl = isVideo ? m.url : getSecureUrl(m.url);
+
+                            // Fallback thumbnail for videos if not saved
+                            // Fallback thumbnail for videos if not saved
+                            // Use a clean SVG data URI with a play icon
+                            const placeholderThumb = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NDAiIGhlaWdodD0iMzYwIiB2aWV3Qm94PSIwIDAgNjQwIDM2MCI+PHJlY3Qgd2lkdGg9IjY0MCIgaGVpZ2h0PSIzNjAiIGZpbGw9IiMxMTE4MjciLz48Y2lyY2xlIGN4PSIzMjAiIGN5PSIxODAiIHI9IjQ4IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC45Ii8+PHBvbHlnb24gcG9pbnRzPSIzMTAsMTU1IDM0NSwxODAgMzEwLDIwNSIgZmlsbD0iIzExMTgyNyIvPjwvc3ZnPg==';
+                            const thumb = m.thumbnail || (isVideo ? placeholderThumb : getSecureUrl(m.url));
+
+                            return {
+                                id: m.id || generateId(),
+                                url: secureUrl,
+                                remoteUrl: secureUrl,
+                                thumbnail: thumb,
+                                status: 'uploaded',
+                                fileName: m.fileName || 'media',
+                                file: { name: m.fileName || 'media', type: m.fileType || '' }
+                            };
+                        })
                 }))
             }));
             state.dayCounter = state.days.length;
@@ -2217,7 +2204,8 @@ window.app = {
                             url: safeUrl,
                             remoteUrl: safeUrl,
                             fileName: m.file?.name,
-                            fileType: m.file?.type,
+                            fileType: m.fileType,
+                            thumbnail: m.thumbnail, // Save thumbnail (crucial for videos)
                             status: safeUrl ? 'uploaded' : 'pending'
                         };
                     })
