@@ -2148,7 +2148,7 @@ window.app = {
                                 thumbnail: thumb,
                                 status: 'uploaded',
                                 fileName: m.fileName || 'media',
-                                file: { name: m.fileName || 'media', type: m.fileType || '' }
+                                file: { name: m.fileName || 'media', type: m.fileType || (isVideo ? 'video/mp4' : '') }
                             };
                         })
                 }))
