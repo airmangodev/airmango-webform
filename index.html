@@ -42,7 +42,8 @@ PAGE STRUCTURE
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=1.2">
+    <link rel="stylesheet" href="styles.css?v=1.4">
+    <link rel="stylesheet" href="dashboard.css?v=1.0">
 
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -122,14 +123,47 @@ PAGE STRUCTURE
         </div>
     </div>
 
-    <!-- Header -->
-    <header class="header">
+    <!-- Dashboard View -->
+    <div id="dashboardView" class="dashboard-view" hidden>
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <img src="assets/images/Logo.png" alt="Airmango" class="logo-icon">
+                    <span class="logo-text">Airmango</span>
+                </div>
+                <h1 class="header-title">Your Trips</h1>
+                <div class="auth-user-bar">
+                    <span class="auth-user-email" id="dashboardUserEmail"></span>
+                    <button type="button" class="auth-logout-btn dashboard-logout-btn">Sign Out</button>
+                </div>
+            </div>
+        </header>
+        <main class="dashboard-container">
+            <div class="dashboard-actions-row">
+                <button id="createNewTripBtn" class="btn btn-primary create-trip-btn">
+                    <span class="plus-icon">+</span> Create New Trip
+                </button>
+            </div>
+            <div id="tripsGrid" class="trips-grid">
+                <p>Loading trips...</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Header (Editor) -->
+    <header class="header" id="editorHeader" hidden>
         <div class="header-content">
-            <a href="index.html" class="logo">
-                <img src="assets/images/Logo.png" alt="Airmango" class="logo-icon">
-                <span class="logo-text">Airmango</span>
-            </a>
-            <h1 class="header-title">Preview Your Iceland Trip</h1>
+            <div class="header-left-group">
+                <button id="backToDashboardBtn" class="btn btn-outline btn-sm back-dashboard-btn"
+                    title="Back to Dashboard">
+                    &larr; <span class="desktop-only">Dashboard</span>
+                </button>
+                <a href="index.html" class="logo">
+                    <img src="assets/images/Logo.png" alt="Airmango" class="logo-icon">
+                    <span class="logo-text">Airmango</span>
+                </a>
+            </div>
+            <h1 class="header-title" id="editorHeaderTitle">Trip Editor</h1>
 
             <!-- User Bar (shown when logged in) -->
             <div class="auth-user-bar" id="authUserBar" hidden>
@@ -142,10 +176,8 @@ PAGE STRUCTURE
     <!-- Save Indicator -->
     <div class="save-indicator" id="saveIndicator" hidden></div>
 
-
-
-    <!-- Main Container - 50/50 Split -->
-    <main class="main-container split-layout">
+    <!-- Main Container - 50/50 Split (Editor) -->
+    <main class="main-container split-layout" id="editorMain" hidden>
         <!-- Left Panel - Editor -->
         <aside class="left-panel editor-panel">
             <div class="panel-content">
@@ -662,8 +694,8 @@ PAGE STRUCTURE
     </div>
 
     <script src="supabase-config.js?v=1.1"></script>
-    <script src="auth.js?v=1.2"></script>
-    <script src="app.js?v=1.3"></script>
+    <script src="auth.js?v=2.4"></script>
+    <script src="app.js?v=2.2"></script>
 </body>
 
 </html>

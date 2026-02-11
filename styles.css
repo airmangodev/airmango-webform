@@ -5073,3 +5073,4 @@ body.is-iframe .header {
         padding: 6px 12px;
     }
 }
+[hidden] { display: none !important; }

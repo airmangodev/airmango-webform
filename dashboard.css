@@ -1,0 +1,172 @@
+/* ===== Dashboard Styles ===== */
+.dashboard-view {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #f9fafb;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 50;
+    /* Above editor, below auth overlay */
+    overflow-y: auto;
+}
+
+.dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 24px;
+    width: 100%;
+    flex: 1;
+}
+
+.dashboard-header {
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.dashboard-actions-row {
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.trips-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+}
+
+.trip-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    border: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.trip-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    border-color: #d1d5db;
+}
+
+.trip-card-cover {
+    height: 160px;
+    background-color: #f3f4f6;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+}
+
+.trip-card-actions-top {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 8px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.trip-card:hover .trip-card-actions-top {
+    opacity: 1;
+}
+
+.delete-trip-btn {
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ef4444;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.delete-trip-btn:hover {
+    background: #fee2e2;
+}
+
+.trip-card-content {
+    padding: 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.trip-card-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.trip-card-meta {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.trip-status {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    background-color: #fbbf24;
+    color: #92400e;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.trip-status.submitted {
+    background-color: #34d399;
+    color: #065f46;
+}
+
+.create-trip-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    font-weight: 600;
+}
+
+/* Back Button in Editor */
+.back-dashboard-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-color: #d1d5db;
+    color: #374151;
+    background: white;
+}
+
+.back-dashboard-btn:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+@media (max-width: 640px) {
+    .trip-card-actions-top {
+        opacity: 1;
+        /* Always show delete on mobile */
+    }
+}
