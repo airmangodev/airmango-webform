@@ -99,8 +99,7 @@ const elements = {
     daysContainer: document.getElementById('daysContainer'),
     addDayBtn: document.getElementById('addDayBtn'),
     submitBtn: document.getElementById('submitBtn'),
-    userName: document.getElementById('userName'),
-    userEmail: document.getElementById('userEmail'),
+    // userName/userEmail removed - accessing via authState instead
     legalConsent: document.getElementById('legalConsent'),
 
     coverUploadZone: document.getElementById('coverUploadZone'),
@@ -1193,11 +1192,12 @@ function updateSubmitButton() {
 }
 
 function validateForm() {
-    const userName = elements.userName?.value.trim();
-    const userEmail = elements.userEmail?.value.trim();
+    // Check if user is authenticated
+    if (!authState.user) {
+        showToast('Please sign in first', 'error');
+        return false;
+    }
 
-    if (!userName || !userEmail) return false;
-    if (!isValidEmail(userEmail)) return false;
     if (state.trip.coverImages.length === 0) return false;
     if (!state.trip.title.trim()) return false;
     if (!state.trip.description.trim()) return false;
@@ -1243,6 +1243,11 @@ async function handleSubmit() {
     try {
         const payload = buildSubmissionPayload();
 
+        // Log consent to Supabase (non-blocking)
+        if (typeof logConsent === 'function') {
+            logConsent().catch(err => console.warn('[Submit] Consent log failed:', err));
+        }
+
         const response = await fetch(CONFIG.finalSubmissionWebhook, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1250,6 +1255,11 @@ async function handleSubmit() {
         });
 
         if (!response.ok) throw new Error('Submission failed');
+
+        // Clear saved progress after successful submission
+        if (typeof clearFormProgress === 'function') {
+            clearFormProgress().catch(err => console.warn('[Submit] Clear progress failed:', err));
+        }
 
         if (elements.successModal) elements.successModal.hidden = false;
 
@@ -1282,8 +1292,9 @@ function countTotalMedia() {
 function buildSubmissionPayload() {
     return {
         user: {
-            name: elements.userName.value.trim(),
-            email: elements.userEmail.value.trim()
+            name: authState.user.user_metadata?.full_name || 'Anonymous',
+            email: authState.user.email,
+            id: authState.user.id
         },
         trip: {
             title: state.trip.title,

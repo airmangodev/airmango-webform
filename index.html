@@ -42,13 +42,86 @@ PAGE STRUCTURE
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=1.1">
+    <link rel="stylesheet" href="styles.css?v=1.2">
+
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
     <!-- Clicky Analytics -->
     <script async data-id="101171322" src="//static.getclicky.com/js"></script>
 </head>
 
 <body>
+    <!-- Auth Overlay -->
+    <div class="auth-overlay visible" id="authOverlay">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <img src="assets/images/Logo.png" alt="Airmango" class="auth-logo-img">
+                <span class="auth-logo-text">Airmango</span>
+            </div>
+
+            <!-- Login Form -->
+            <form id="authLoginForm" class="auth-form">
+                <h2 class="auth-title">Welcome Back</h2>
+                <p class="auth-subtitle">Sign in to continue your trip</p>
+                <div class="auth-field">
+                    <label for="authLoginEmail">Email</label>
+                    <input type="email" id="authLoginEmail" placeholder="your@email.com" required autocomplete="email">
+                </div>
+                <div class="auth-field">
+                    <label for="authLoginPassword">Password</label>
+                    <input type="password" id="authLoginPassword" placeholder="Your password" required
+                        autocomplete="current-password" minlength="6">
+                </div>
+                <div class="auth-error" id="authLoginError" hidden></div>
+                <button type="submit" class="auth-btn" id="authLoginBtn">
+                    <span class="auth-btn-text">Sign In</span>
+                </button>
+                <p class="auth-switch">Don't have an account? <a href="#" id="switchToSignup">Create one</a></p>
+            </form>
+
+            <!-- Signup Form -->
+            <form id="authSignupForm" class="auth-form" hidden>
+                <h2 class="auth-title">Create Account</h2>
+                <p class="auth-subtitle">Get started with your trip submission</p>
+                <div class="auth-field">
+                    <label for="authSignupName">Full Name</label>
+                    <input type="text" id="authSignupName" placeholder="Your full name" required autocomplete="name">
+                </div>
+                <div class="auth-field">
+                    <label for="authSignupEmail">Email</label>
+                    <input type="email" id="authSignupEmail" placeholder="your@email.com" required autocomplete="email">
+                </div>
+                <div class="auth-field">
+                    <label for="authSignupPassword">Password</label>
+                    <input type="password" id="authSignupPassword" placeholder="Min 6 characters" required
+                        autocomplete="new-password" minlength="6">
+                </div>
+                <div class="auth-error" id="authSignupError" hidden></div>
+                <button type="submit" class="auth-btn" id="authSignupBtn">
+                    <span class="auth-btn-text">Create Account</span>
+                </button>
+                <p class="auth-switch">Already have an account? <a href="#" id="switchToLogin">Sign in</a></p>
+            </form>
+
+            <!-- Email Verification Notice -->
+            <div id="authVerifyNotice" class="auth-verify" hidden>
+                <div class="auth-verify-icon">
+                    <svg viewBox="0 0 64 64" fill="none" width="64" height="64">
+                        <circle cx="32" cy="32" r="30" stroke="#10B981" stroke-width="2.5" />
+                        <path d="M22 32l6 6 14-14" stroke="#10B981" stroke-width="2.5" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <h2 class="auth-title">Check Your Email</h2>
+                <p class="auth-subtitle">We've sent a verification link to<br><strong id="authVerifyEmail"></strong></p>
+                <p class="auth-verify-hint">Click the link in the email to verify your account, then come back and sign
+                    in.</p>
+                <a href="#" id="backToLogin" class="auth-btn auth-btn-secondary">Back to Sign In</a>
+            </div>
+        </div>
+    </div>
+
     <!-- Header -->
     <header class="header">
         <div class="header-content">
@@ -57,8 +130,17 @@ PAGE STRUCTURE
                 <span class="logo-text">Airmango</span>
             </a>
             <h1 class="header-title">Preview Your Iceland Trip</h1>
+
+            <!-- User Bar (shown when logged in) -->
+            <div class="auth-user-bar" id="authUserBar" hidden>
+                <span class="auth-user-email" id="authUserBarEmail"></span>
+                <button type="button" class="auth-logout-btn" id="authLogoutBtn">Sign Out</button>
+            </div>
         </div>
     </header>
+
+    <!-- Save Indicator -->
+    <div class="save-indicator" id="saveIndicator" hidden></div>
 
 
 
@@ -67,18 +149,8 @@ PAGE STRUCTURE
         <!-- Left Panel - Editor -->
         <aside class="left-panel editor-panel">
             <div class="panel-content">
-                <!-- User Info Section -->
-                <section class="user-info-section">
-                    <h2 class="section-title">Your Information</h2>
-                    <div class="form-group">
-                        <label for="userName">Full Name <span class="required">*</span></label>
-                        <input type="text" id="userName" placeholder="Enter your full name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="userEmail">Email Address <span class="required">*</span></label>
-                        <input type="email" id="userEmail" placeholder="your@email.com" required>
-                    </div>
-                </section>
+                <!-- User Info Section (Removed - using auth data) -->
+                <!-- Trip Details Section -->
 
                 <!-- Trip Details Section -->
                 <section class="trip-details-section">
@@ -589,7 +661,9 @@ PAGE STRUCTURE
         </div>
     </div>
 
-    <script src="app.js?v=1.1"></script>
+    <script src="supabase-config.js?v=1.1"></script>
+    <script src="auth.js?v=1.1"></script>
+    <script src="app.js?v=1.2"></script>
 </body>
 
 </html>
