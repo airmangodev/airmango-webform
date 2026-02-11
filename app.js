@@ -1802,8 +1802,23 @@ function getHighResThumbnail(url) {
     if (!url) return '';
     if (url.startsWith('data:')) return url;
     if (url.startsWith('blob:')) return url;
-    // Use 1200w for high clarity
-    return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=1200&output=webp&q=80`;
+    // Use 1280w for high clarity
+    return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=1280&output=webp&q=80`;
+}
+
+// Restore Original URL from Proxy (Fixes corrupted saves)
+function restoreOriginalUrl(url) {
+    if (!url) return url;
+    if (url.startsWith('https://wsrv.nl/')) {
+        try {
+            const urlObj = new URL(url);
+            const original = urlObj.searchParams.get('url');
+            if (original) return decodeURIComponent(original);
+        } catch (e) {
+            console.warn('Failed to restore URL', e);
+        }
+    }
+    return url;
 }
 
 // Global handler for video errors (Mixed Content, etc.)
@@ -2206,7 +2221,7 @@ window.app = {
                 state.trip.coverImages = data.trip.coverImages
                     .filter(img => img.url && !img.url.startsWith('blob:'))
                     .map(img => {
-                        const originalUrl = img.remoteUrl || img.url;
+                        const originalUrl = img.remoteUrl || restoreOriginalUrl(img.url);
                         return {
                             url: getSecureUrl(originalUrl),
                             remoteUrl: originalUrl,
@@ -2240,13 +2255,13 @@ window.app = {
                             // Detect if video
                             const isVideo = (m.fileType && m.fileType.startsWith('video')) || (m.fileName && m.fileName.match(/\.(mp4|mov|webm)$/i));
 
-                            const originalUrl = m.remoteUrl || m.url;
+                            const originalUrl = m.remoteUrl || restoreOriginalUrl(m.url);
                             const secureUrl = isVideo ? originalUrl : getSecureUrl(originalUrl); // Video needs original, images need proxy
 
                             // Fallback thumbnail for videos if not saved
                             const placeholderThumb = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NDAiIGhlaWdodD0iMzYwIiB2aWV3Qm94PSIwIDAgNjQwIDM2MCI+PHJlY3Qgd2lkdGg9IjY0MCIgaGVpZ2h0PSIzNjAiIGZpbGw9IiMxMTE4MjciLz48Y2lyY2xlIGN4PSIzMjAiIGN5PSIxODAiIHI9IjQ4IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC45Ii8+PHBvbHlnb24gcG9pbnRzPSIzMTAsMTU1IDM0NSwxODAgMzEwLDIwNSIgZmlsbD0iIzExMTgyNyIvPjwvc3ZnPg==';
 
-                            const originalThumb = m.remoteThumbnail || m.thumbnail;
+                            const originalThumb = m.remoteThumbnail || restoreOriginalUrl(m.thumbnail);
                             const thumb = originalThumb || (isVideo ? placeholderThumb : getSecureUrl(originalUrl));
 
                             // For Display (if http, proxy it)
