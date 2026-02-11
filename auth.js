@@ -324,11 +324,21 @@ function renderTrips(trips, reset = false) {
         const status = trip.status || 'draft';
         const updatedAt = new Date(trip.updated_at).toLocaleDateString();
 
+        // Helper to secure HTTP images via proxy
+        const getSecureUrl = (url) => {
+            if (!url) return null;
+            if (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('https://')) return url;
+            return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=400&output=webp`;
+        };
+
         // Find a cover image if available
         let coverUrl = null;
         if (trip.form_data?.trip?.coverImages && trip.form_data.trip.coverImages.length > 0) {
             const firstImg = trip.form_data.trip.coverImages[0];
-            coverUrl = firstImg.remoteUrl || firstImg.url;
+            // Use remoteUrl if available, otherwise url (if it matches logic)
+            // But we specifically need to secure it
+            const rawUrl = firstImg.remoteUrl || firstImg.url;
+            coverUrl = getSecureUrl(rawUrl);
         }
 
         return `

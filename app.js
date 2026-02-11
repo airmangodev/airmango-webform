@@ -976,7 +976,7 @@ function updateMobilePreview() {
         if (state.trip.coverImages.length > 0) {
             slider.innerHTML = state.trip.coverImages.map(img => `
                 <div class="app-cover-item">
-                    <div class="app-cover-image" style="background-image: url('${img.url}')"></div>
+                    <div class="app-cover-image" style="background-image: url('${getSecureUrl(img.url)}')"></div>
                 </div>
             `).join('');
 
@@ -1407,6 +1407,13 @@ function showToast(message, type = 'success') {
 }
 
 // ===== Utilities =====
+function getSecureUrl(url) {
+    if (!url) return '';
+    if (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('https://')) return url;
+    // Proxy insecure HTTP images
+    return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=800&output=webp`;
+}
+
 function generateId() {
     return 'id_' + Math.random().toString(36).substr(2, 9);
 }
@@ -1827,7 +1834,7 @@ function renderFeedItem(container, item) {
             </button>
         `;
     } else {
-        container.innerHTML = `<img src="${mediaUrl}" alt="Media" onerror="console.error('Image failed to load:', '${mediaUrl}')">`;
+        container.innerHTML = `<img src="${getSecureUrl(mediaUrl)}" alt="Media" onerror="console.error('Image failed to load:', '${mediaUrl}')">`;
     }
 }
 
@@ -2185,11 +2192,14 @@ window.app = {
                 title: state.trip.title,
                 description: state.trip.description,
                 location: state.trip.location,
-                coverImages: state.trip.coverImages.map(img => ({
-                    url: img.remoteUrl || img.url,
-                    remoteUrl: img.remoteUrl || img.url,
-                    id: img.id
-                }))
+                coverImages: state.trip.coverImages.map(img => {
+                    const safeUrl = img.remoteUrl || (img.url && !img.url.startsWith('blob:') ? img.url : null);
+                    return {
+                        url: safeUrl,
+                        remoteUrl: safeUrl,
+                        id: img.id
+                    };
+                })
             },
             days: state.days.map(day => ({
                 id: day.id,
@@ -2200,14 +2210,17 @@ window.app = {
                     type: stop.type,
                     title: stop.title,
                     description: stop.description,
-                    media: stop.media.map(m => ({
-                        id: m.id,
-                        url: m.remoteUrl || m.url,
-                        remoteUrl: m.remoteUrl || m.url,
-                        fileName: m.file?.name,
-                        fileType: m.file?.type,
-                        status: 'uploaded'
-                    }))
+                    media: stop.media.map(m => {
+                        const safeUrl = m.remoteUrl || (m.url && !m.url.startsWith('blob:') ? m.url : null);
+                        return {
+                            id: m.id,
+                            url: safeUrl,
+                            remoteUrl: safeUrl,
+                            fileName: m.file?.name,
+                            fileType: m.file?.type,
+                            status: safeUrl ? 'uploaded' : 'pending'
+                        };
+                    })
                 }))
             })),
             consent: {
