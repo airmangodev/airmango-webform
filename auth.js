@@ -249,6 +249,12 @@ async function onAuthSuccess() {
     // Show user bar
     showUserBar();
 
+    // Update app author name in mobile preview
+    const authorNameEl = document.getElementById('appAuthorName');
+    if (authorNameEl && authState.user.user_metadata?.full_name) {
+        authorNameEl.textContent = authState.user.user_metadata.full_name;
+    }
+
     // Pre-fill form fields from user profile
     prefillUserInfo();
 
@@ -467,12 +473,14 @@ function collectFormData() {
             title: document.getElementById('tripTitle')?.value || '',
             description: document.getElementById('tripDescription')?.value || '',
             location: document.getElementById('tripLocation')?.value || '',
-            // Save cover image URLs (not files — serialize only uploaded URLs)
+            // Save cover image URLs (prioritize remoteUrl)
             coverImages: (typeof state !== 'undefined' && state.trip)
-                ? state.trip.coverImages.map(img => ({
-                    url: img.remoteUrl || img.url || '',
-                    id: img.id
-                }))
+                ? state.trip.coverImages
+                    .filter(img => img.remoteUrl && !img.remoteUrl.startsWith('blob:'))
+                    .map(img => ({
+                        url: img.remoteUrl,
+                        id: img.id
+                    }))
                 : []
         },
         // Save full days/stops state (with media URLs only)
@@ -481,18 +489,20 @@ function collectFormData() {
                 id: day.id,
                 number: day.number,
                 title: day.title,
-                stops: day.stops.map(stop => ({
+                stops: (day.stops || []).map(stop => ({
                     id: stop.id,
                     type: stop.type,
                     title: stop.title,
                     description: stop.description,
-                    media: stop.media.map(m => ({
-                        id: m.id,
-                        url: m.remoteUrl || m.url || '',
-                        fileName: m.file?.name || '',
-                        fileType: m.file?.type || '',
-                        status: m.status
-                    }))
+                    media: (stop.media || [])
+                        .filter(m => m.remoteUrl && !m.remoteUrl.startsWith('blob:')) // Only save uploaded media
+                        .map(m => ({
+                            id: m.id,
+                            url: m.remoteUrl, // Use remoteUrl as the source of truth
+                            fileName: m.file?.name || 'media',
+                            fileType: m.file?.type || '',
+                            status: 'uploaded'
+                        }))
                 }))
             }))
             : [],
@@ -571,11 +581,13 @@ async function restoreFormProgress() {
                 // Restore cover images (only remote URLs — files need re-upload)
                 if (saved.trip.coverImages && saved.trip.coverImages.length > 0) {
                     state.trip.coverImages = saved.trip.coverImages
-                        .filter(img => img.url)
+                        .filter(img => img.url && !img.url.startsWith('blob:'))
                         .map(img => ({
                             url: img.url,
                             remoteUrl: img.url,
-                            id: img.id || generateId()
+                            thumbnail: img.url, // Use full URL as thumbnail for now
+                            id: img.id || generateId(),
+                            status: 'uploaded'
                         }));
                 }
             }
@@ -592,14 +604,15 @@ async function restoreFormProgress() {
                         title: stop.title || '',
                         description: stop.description || '',
                         media: (stop.media || [])
-                            .filter(m => m.url && m.status === 'uploaded')
+                            .filter(m => m.url && !m.url.startsWith('blob:'))
                             .map(m => ({
                                 id: m.id || generateId(),
                                 url: m.url,
                                 remoteUrl: m.url,
+                                thumbnail: m.url, // CRITICAL: Set thumbnail to URL so it renders!
                                 status: 'uploaded',
-                                fileName: m.fileName || '',
-                                file: { name: m.fileName || '', type: m.fileType || '' }
+                                fileName: m.fileName || 'media',
+                                file: { name: m.fileName || 'media', type: m.fileType || '' }
                             }))
                     }))
                 }));

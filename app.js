@@ -1187,45 +1187,82 @@ function updateStats() {
 }
 
 function updateSubmitButton() {
-    const isValid = validateForm();
-    if (elements.submitBtn) elements.submitBtn.disabled = !isValid;
+    // We no longer disable the button so users can click and see validation errors
+    // const isValid = validateForm(false);
+    // if (elements.submitBtn) elements.submitBtn.disabled = !isValid;
+    if (elements.submitBtn) elements.submitBtn.disabled = false;
 }
 
-function validateForm() {
+function validateForm(verbose = false) {
     // Check if user is authenticated
     if (!authState.user) {
-        showToast('Please sign in first', 'error');
+        if (verbose) showToast('Please sign in first', 'error');
         return false;
     }
 
-    if (state.trip.coverImages.length === 0) return false;
-    if (!state.trip.title.trim()) return false;
-    if (!state.trip.description.trim()) return false;
-    if (state.days.length === 0) return false;
+    if (state.trip.coverImages.length === 0) {
+        if (verbose) showToast('Please add at least one cover image', 'error');
+        return false;
+    }
+    if (!state.trip.title.trim()) {
+        if (verbose) showToast('Please enter a trip title', 'error');
+        return false;
+    }
+    if (!state.trip.description.trim()) {
+        if (verbose) showToast('Please enter a trip description', 'error');
+        return false;
+    }
+    if (state.days.length === 0) {
+        if (verbose) showToast('Please add at least one day', 'error');
+        return false;
+    }
 
     for (const day of state.days) {
-        if (!day.title.trim()) return false;
+        if (!day.title.trim()) {
+            if (verbose) showToast(`Please enter a title for Day ${day.number}`, 'error');
+            return false;
+        }
         for (const stop of day.stops) {
-            if (!stop.title.trim() || !stop.description.trim()) return false;
+            if (!stop.title.trim()) {
+                if (verbose) showToast(`Please enter a title for stop in Day ${day.number}`, 'error');
+                return false;
+            }
+            if (!stop.description.trim()) {
+                if (verbose) showToast(`Please enter a description for "${stop.title || 'stop'}" in Day ${day.number}`, 'error');
+                return false;
+            }
         }
     }
 
-    if (state.activeUploads > 0) return false;
+    if (state.activeUploads > 0) {
+        if (verbose) showToast('Please wait for media uploads to finish', 'warning');
+        return false;
+    }
 
     // Require all 4 consent checkboxes
-    if (!elements.consentOwnership?.checked) return false;
-    if (!elements.consentLicense?.checked) return false;
-    if (!elements.consentAge?.checked) return false;
-    if (!elements.consentPeople?.checked) return false;
+    if (!elements.consentOwnership?.checked) {
+        if (verbose) showToast('Please confirm content ownership', 'error');
+        return false;
+    }
+    if (!elements.consentLicense?.checked) {
+        if (verbose) showToast('Please agree to the license terms', 'error');
+        return false;
+    }
+    if (!elements.consentAge?.checked) {
+        if (verbose) showToast('Please confirm your age', 'error');
+        return false;
+    }
+    if (!elements.consentPeople?.checked) {
+        if (verbose) showToast('Please confirm consent for people in photos', 'error');
+        return false;
+    }
 
     return true;
 }
 
 // ===== Submit =====
 async function handleSubmit() {
-    if (!validateForm()) {
-        showToast('Please fill in all required fields', 'error');
-        trackEvent('form_validation_failed');
+    if (!validateForm(true)) {
         return;
     }
 
