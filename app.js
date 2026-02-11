@@ -352,6 +352,7 @@ function removeCoverImage(index, event) {
     updateMobilePreview();
     updateStats();
     updateSubmitButton();
+    if (window.auth?.saveCurrentTrip) window.auth.saveCurrentTrip();
 }
 
 // ===== Days & Stops Management =====
@@ -367,9 +368,11 @@ function addDay() {
     // Remove: state.currentDayIndex = state.days.length - 1; 
     // We stay on the current day unless the user scrolls or we explicitly scroll there.
     renderDays();
+    renderDays();
     renderMobilePreview();
     updateStats();
     updateSubmitButton();
+    if (window.auth?.saveCurrentTrip) window.auth.saveCurrentTrip();
 
     // Track analytics
     trackEvent('add_day', `Day ${state.dayCounter}`);
@@ -391,6 +394,7 @@ function removeDay(dayId) {
     renderMobilePreview();
     updateStats();
     updateSubmitButton();
+    if (window.auth?.saveCurrentTrip) window.auth.saveCurrentTrip();
 }
 
 function updateDayTitle(dayId, title) {
@@ -399,6 +403,7 @@ function updateDayTitle(dayId, title) {
         day.title = title;
         renderMobilePreview();
         updateSubmitButton();
+        if (window.auth?.saveCurrentTrip) window.auth.saveCurrentTrip();
     }
 }
 
@@ -652,6 +657,7 @@ function removeMediaFromStop(stopId, mediaId) {
         renderMobilePreview();
         updateStats();
         updateSubmitButton();
+        if (window.auth?.saveCurrentTrip) window.auth.saveCurrentTrip();
     }
 }
 
@@ -687,9 +693,11 @@ async function generateThumbnail(mediaItem, file) {
     }
 }
 
+// Generate High-Res Thumbnail (Max 1280px)
 function createThumbnailDataUrl(file) {
     return new Promise((resolve) => {
         const isVideo = file.type.startsWith('video/');
+        const MAX_SIZE = 1280;
 
         if (isVideo) {
             const video = document.createElement('video');
@@ -701,14 +709,21 @@ function createThumbnailDataUrl(file) {
             video.onloadeddata = () => { video.currentTime = 1; };
             video.onseeked = () => {
                 const canvas = document.createElement('canvas');
-                canvas.width = 220;
-                canvas.height = 116;
+                let w = video.videoWidth;
+                let h = video.videoHeight;
+
+                // Scale Down if too big (maintain aspect ratio)
+                if (w > MAX_SIZE || h > MAX_SIZE) {
+                    const scale = Math.min(MAX_SIZE / w, MAX_SIZE / h);
+                    w *= scale;
+                    h *= scale;
+                }
+
+                canvas.width = w;
+                canvas.height = h;
                 const ctx = canvas.getContext('2d');
-                const scale = Math.max(220 / video.videoWidth, 116 / video.videoHeight);
-                const x = (220 - video.videoWidth * scale) / 2;
-                const y = (116 - video.videoHeight * scale) / 2;
-                ctx.drawImage(video, x, y, video.videoWidth * scale, video.videoHeight * scale);
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                ctx.drawImage(video, 0, 0, w, h);
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
                 URL.revokeObjectURL(video.src);
                 resolve(dataUrl);
             };
@@ -719,14 +734,21 @@ function createThumbnailDataUrl(file) {
                 const img = new Image();
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    canvas.width = 220;
-                    canvas.height = 116;
+                    let w = img.width;
+                    let h = img.height;
+
+                    // Scale Down
+                    if (w > MAX_SIZE || h > MAX_SIZE) {
+                        const scale = Math.min(MAX_SIZE / w, MAX_SIZE / h);
+                        w *= scale;
+                        h *= scale;
+                    }
+
+                    canvas.width = w;
+                    canvas.height = h;
                     const ctx = canvas.getContext('2d');
-                    const scale = Math.max(220 / img.width, 116 / img.height);
-                    const x = (220 - img.width * scale) / 2;
-                    const y = (116 - img.height * scale) / 2;
-                    ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
-                    resolve(canvas.toDataURL('image/jpeg', 0.7));
+                    ctx.drawImage(img, 0, 0, w, h);
+                    resolve(canvas.toDataURL('image/jpeg', 0.85));
                 };
                 img.onerror = () => resolve(null);
                 img.src = e.target.result;
