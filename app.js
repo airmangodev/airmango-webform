@@ -2126,9 +2126,9 @@ window.app = {
                 state.trip.coverImages = data.trip.coverImages
                     .filter(img => img.url && !img.url.startsWith('blob:'))
                     .map(img => ({
-                        url: img.url,
-                        remoteUrl: img.url,
-                        thumbnail: img.url,
+                        url: getSecureUrl(img.url),
+                        remoteUrl: getSecureUrl(img.url),
+                        thumbnail: getSecureUrl(img.url),
                         id: img.id || generateId(),
                         status: 'uploaded'
                     }));
@@ -2155,9 +2155,9 @@ window.app = {
                         .filter(m => m.url && !m.url.startsWith('blob:'))
                         .map(m => ({
                             id: m.id || generateId(),
-                            url: m.url,
-                            remoteUrl: m.url,
-                            thumbnail: m.url,
+                            url: getSecureUrl(m.url),
+                            remoteUrl: getSecureUrl(m.url),
+                            thumbnail: getSecureUrl(m.url),
                             status: 'uploaded',
                             fileName: m.fileName || 'media',
                             file: { name: m.fileName || 'media', type: m.fileType || '' }
