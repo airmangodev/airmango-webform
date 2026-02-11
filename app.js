@@ -1827,22 +1827,31 @@ window.handleFeedVideoError = function (videoEl) {
         const btn = parent.querySelector('.video-control-btn');
         if (btn) btn.style.display = 'none';
 
-        // Insert Image
+        // Insert Image - Clickable to open video
         if (!parent.querySelector('.video-fallback-img')) {
+            const link = document.createElement('a');
+            link.href = videoEl.src; // Original Video URL
+            link.target = '_blank'; // Open in new tab
+            link.style.display = 'block';
+            link.style.position = 'absolute';
+            link.style.inset = '0';
+            link.style.cursor = 'pointer';
+            link.title = "Click to play video (external)";
+
             const img = document.createElement('img');
             img.className = 'video-fallback-img';
             img.src = fallbackSrc;
             img.style.width = '100%';
             img.style.height = '100%';
             img.style.objectFit = 'cover';
-            img.style.position = 'absolute';
-            img.style.inset = '0';
-            parent.insertBefore(img, parent.firstChild);
 
-            // Add subtle error badge
+            link.appendChild(img);
+            parent.insertBefore(link, parent.firstChild);
+
+            // Add subtle error badge with hint
             parent.insertAdjacentHTML('beforeend', `
-                <div style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.6); color:white; font-size:10px; padding:4px 8px; border-radius:12px; backdrop-filter:blur(4px);">
-                    Video Unavailable
+                <div style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.6); color:white; font-size:10px; padding:4px 8px; border-radius:12px; backdrop-filter:blur(4px); pointer-events:none;">
+                    Tap to Play
                 </div>
             `);
         }
@@ -2196,13 +2205,16 @@ window.app = {
             if (data.trip.coverImages) {
                 state.trip.coverImages = data.trip.coverImages
                     .filter(img => img.url && !img.url.startsWith('blob:'))
-                    .map(img => ({
-                        url: getSecureUrl(img.url),
-                        remoteUrl: getSecureUrl(img.url),
-                        thumbnail: getSecureUrl(img.url),
-                        id: img.id || generateId(),
-                        status: 'uploaded'
-                    }));
+                    .map(img => {
+                        const originalUrl = img.remoteUrl || img.url;
+                        return {
+                            url: getSecureUrl(originalUrl),
+                            remoteUrl: originalUrl,
+                            thumbnail: getSecureUrl(img.thumbnail || originalUrl),
+                            id: img.id || generateId(),
+                            status: 'uploaded'
+                        };
+                    });
             }
         }
 
@@ -2227,19 +2239,25 @@ window.app = {
                         .map(m => {
                             // Detect if video
                             const isVideo = (m.fileType && m.fileType.startsWith('video')) || (m.fileName && m.fileName.match(/\.(mp4|mov|webm)$/i));
-                            const secureUrl = isVideo ? m.url : getSecureUrl(m.url);
+
+                            const originalUrl = m.remoteUrl || m.url;
+                            const secureUrl = isVideo ? originalUrl : getSecureUrl(originalUrl); // Video needs original, images need proxy
 
                             // Fallback thumbnail for videos if not saved
-                            // Fallback thumbnail for videos if not saved
-                            // Use a clean SVG data URI with a play icon
                             const placeholderThumb = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NDAiIGhlaWdodD0iMzYwIiB2aWV3Qm94PSIwIDAgNjQwIDM2MCI+PHJlY3Qgd2lkdGg9IjY0MCIgaGVpZ2h0PSIzNjAiIGZpbGw9IiMxMTE4MjciLz48Y2lyY2xlIGN4PSIzMjAiIGN5PSIxODAiIHI9IjQ4IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC45Ii8+PHBvbHlnb24gcG9pbnRzPSIzMTAsMTU1IDM0NSwxODAgMzEwLDIwNSIgZmlsbD0iIzExMTgyNyIvPjwvc3ZnPg==';
-                            const thumb = m.thumbnail || (isVideo ? placeholderThumb : getSecureUrl(m.url));
+
+                            const originalThumb = m.remoteThumbnail || m.thumbnail;
+                            const thumb = originalThumb || (isVideo ? placeholderThumb : getSecureUrl(originalUrl));
+
+                            // For Display (if http, proxy it)
+                            const displayThumb = (originalThumb && !originalThumb.startsWith('data:')) ? getSecureUrl(originalThumb) : thumb;
 
                             return {
                                 id: m.id || generateId(),
                                 url: secureUrl,
-                                remoteUrl: secureUrl,
-                                thumbnail: thumb,
+                                remoteUrl: originalUrl, // KEEP ORIGINAL
+                                thumbnail: displayThumb, // Display Secure
+                                remoteThumbnail: originalThumb, // KEEP ORIGINAL
                                 status: 'uploaded',
                                 fileName: m.fileName || 'media',
                                 file: { name: m.fileName || 'media', type: m.fileType || (isVideo ? 'video/mp4' : '') }
@@ -2301,7 +2319,7 @@ window.app = {
                             remoteUrl: safeUrl,
                             fileName: m.file?.name,
                             fileType: m.fileType,
-                            thumbnail: m.thumbnail, // Save thumbnail (crucial for videos)
+                            thumbnail: m.remoteThumbnail || m.thumbnail, // Save original thumbnail
                             status: safeUrl ? 'uploaded' : 'pending'
                         };
                     })
