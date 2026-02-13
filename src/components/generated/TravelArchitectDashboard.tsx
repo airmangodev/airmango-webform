@@ -27,6 +27,8 @@ import {
   Zap,
   Info,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Search,
   Map as MapIcon,
 } from 'lucide-react';
@@ -43,9 +45,11 @@ interface PlaceAsset {
   location: string;
   coordinates: { lat: number; lng: number };
   image: string;
+  photos: string[];
   rating: number;
   reviews: number;
-  status: 'available';
+  status: 'available' | 'not-signed';
+  allotmentType: 'pre-approved' | 'on-request' | 'not-partner';
   googlePlaceId: string;
 }
 
@@ -95,34 +99,63 @@ const saveDestination = (dest: Destination) => {
   localStorage.setItem('airmango_destination', JSON.stringify(dest));
 };
 
+// Circular markers matching original style: all pink for partners, gray for not-signed
 const createMarkerSvg = (
   type: string,
-  opts: { isSelected?: boolean; isAdded?: boolean; isHovered?: boolean } = {},
+  opts: { isSelected?: boolean; isAdded?: boolean; isHovered?: boolean; isNotPartner?: boolean } = {},
 ) => {
-  const { isSelected, isAdded, isHovered } = opts;
+  const { isSelected, isAdded, isHovered, isNotPartner } = opts;
   const size = isSelected || isHovered ? 48 : 40;
-  const color =
-    type === 'hotel' ? '#EC407A' : type === 'attraction' ? '#F97316' : '#8B5CF6';
-  const letter = type === 'hotel' ? 'H' : type === 'attraction' ? 'A' : 'T';
+  const r = size / 2 - 4; // radius for inner circle
+  const cx = size / 2;
+  const cy = size / 2;
+  const color = isNotPartner ? '#9CA3AF' : '#EC407A';
 
-  let badge = '';
-  if (isAdded) {
-    badge = `<circle cx="${size - 8}" cy="8" r="7" fill="#22c55e" stroke="white" stroke-width="2"/>
-      <text x="${size - 8}" y="12" text-anchor="middle" fill="white" font-size="10" font-weight="bold">✓</text>`;
+  // Simple recognizable icon shapes (white, centered in circle)
+  let iconSvg = '';
+  const iconScale = size * 0.012;
+  const iconTx = cx - 12 * iconScale;
+  const iconTy = cy - 12 * iconScale;
+  const iconG = `transform="translate(${iconTx},${iconTy}) scale(${iconScale})" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"`;
+
+  if (type === 'hotel') {
+    // Building icon (Hotel from lucide)
+    iconSvg = `<g ${iconG}><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01M16 6h.01M12 6h.01M8 10h.01M16 10h.01M12 10h.01M8 14h.01M16 14h.01M12 14h.01"/></g>`;
+  } else if (type === 'car') {
+    // Car icon
+    iconSvg = `<g ${iconG}><path d="M19 17H5V13l2-6h10l2 6v4z"/><circle cx="7.5" cy="17" r="1.5"/><circle cx="16.5" cy="17" r="1.5"/><path d="M5 13h14"/></g>`;
+  } else if (type === 'attraction') {
+    // Camera icon
+    iconSvg = `<g ${iconG}><path d="M14.5 4h-5L7.5 2h-3a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.5L14.5 4z"/><circle cx="12" cy="11" r="4"/></g>`;
+  } else {
+    // Mountain icon (activity)
+    iconSvg = `<g ${iconG}><path d="M2 20L9 6l4 8 3-4 6 10H2z"/></g>`;
   }
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size + 10}" viewBox="0 0 ${size} ${size + 10}">
-    <defs><filter id="s"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.3"/></filter></defs>
-    <path d="M${size / 2} ${size + 8} C${size / 2} ${size + 8} 2 ${size * 0.6} 2 ${size * 0.38} C2 ${size * 0.15} ${size * 0.22} 2 ${size / 2} 2 C${size * 0.78} 2 ${size - 2} ${size * 0.15} ${size - 2} ${size * 0.38} C${size - 2} ${size * 0.6} ${size / 2} ${size + 8} ${size / 2} ${size + 8}Z" fill="${color}" stroke="white" stroke-width="2.5" filter="url(#s)"/>
-    <circle cx="${size / 2}" cy="${size * 0.38}" r="${size * 0.22}" fill="rgba(255,255,255,0.25)"/>
-    <text x="${size / 2}" y="${size * 0.44}" text-anchor="middle" fill="white" font-size="${size * 0.35}" font-weight="bold" font-family="system-ui, sans-serif">${letter}</text>
+  // Checkmark badge when added to trip
+  let badge = '';
+  if (isAdded) {
+    badge = `<circle cx="${size - 7}" cy="7" r="7" fill="#EC407A" stroke="white" stroke-width="2.5"/><path d="M${size - 10} 7l2 2 4-4" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+  }
+
+  // Ring effect when added
+  let ring = '';
+  if (isAdded) {
+    ring = `<circle cx="${cx}" cy="${cy}" r="${r + 5}" fill="none" stroke="#EC407A" stroke-width="3" opacity="0.5"/>`;
+  }
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size + 10}" height="${size + 10}" viewBox="-5 -5 ${size + 10} ${size + 10}">
+    <defs><filter id="s"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.25"/></filter></defs>
+    ${ring}
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}" stroke="white" stroke-width="4" filter="url(#s)"/>
+    ${iconSvg}
     ${badge}
   </svg>`;
 
   return {
     url: `data:image/svg+xml,${encodeURIComponent(svg)}`,
-    scaledSize: new google.maps.Size(size, size + 10),
-    anchor: new google.maps.Point(size / 2, size + 10),
+    scaledSize: new google.maps.Size(size + 10, size + 10),
+    anchor: new google.maps.Point((size + 10) / 2, (size + 10) / 2),
   };
 };
 
@@ -143,7 +176,7 @@ const CategoryBadge = ({ type }: { type: string }) => {
       icon: <Car className="w-3 h-3" />,
     },
     activity: {
-      bg: 'bg-purple-50 text-purple-600 border-purple-200',
+      bg: 'bg-pink-50 text-pink-600 border-pink-200',
       text: 'Activity',
       icon: <Mountain className="w-3 h-3" />,
     },
@@ -164,6 +197,29 @@ const CategoryBadge = ({ type }: { type: string }) => {
   );
 };
 
+const StatusBadge = ({
+  status,
+  allotmentType,
+}: {
+  status: string;
+  allotmentType?: string;
+}) => {
+  if (status === 'available') {
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#EC407A] text-white">
+        <CheckCircle2 className="w-3 h-3" />
+        {allotmentType === 'pre-approved' ? 'Pre-Approved' : 'On Request'}
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
+      <AlertCircle className="w-3 h-3" />
+      Not on Platform
+    </span>
+  );
+};
+
 // ============================================================================
 // APPLY TRIP CONFIRMATION MODAL
 // ============================================================================
@@ -177,18 +233,8 @@ const ApplyTripModal = ({
   onClose: () => void;
   onConfirm: () => void;
 }) => {
-  // Group by day
-  const byDay = tripAssets.reduce(
-    (acc, a) => {
-      const d = a.day || 1;
-      if (!acc[d]) acc[d] = [];
-      acc[d].push(a);
-      return acc;
-    },
-    {} as Record<number, TripItem[]>,
-  );
-  const days = Object.keys(byDay)
-    .sort((a, b) => Number(a) - Number(b));
+  const notSignedAssets = tripAssets.filter((a) => a.status === 'not-signed');
+  const availableAssets = tripAssets.filter((a) => a.status === 'available');
 
   return (
     <motion.div
@@ -214,20 +260,20 @@ const ApplyTripModal = ({
               Request Trip Confirmation
             </h3>
             <p className="text-sm text-gray-600">
-              Review your trip itinerary and confirm to proceed.
+              Review your trip and confirm. AI agents will contact non-partner suppliers automatically.
             </p>
           </div>
         </div>
 
-        {days.map((day) => (
-          <div key={day} className="mb-4">
+        {/* Available Assets Summary */}
+        {availableAssets.length > 0 && (
+          <div className="mb-4">
             <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-[#EC407A]" />
-              Day {day} ({byDay[Number(day)].length} stop
-              {byDay[Number(day)].length > 1 ? 's' : ''})
+              <CheckCircle2 className="w-4 h-4 text-[#EC407A]" />
+              Ready to Book ({availableAssets.length})
             </h4>
             <div className="space-y-2">
-              {byDay[Number(day)].map((asset) => (
+              {availableAssets.map((asset) => (
                 <div
                   key={asset.id}
                   className="flex items-center gap-3 p-3 bg-pink-50 rounded-lg border border-pink-200"
@@ -236,6 +282,7 @@ const ApplyTripModal = ({
                     src={asset.image}
                     alt={asset.name}
                     className="w-12 h-12 rounded object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).src = ''; (e.target as HTMLImageElement).style.display = 'none'; }}
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 truncate">
@@ -243,28 +290,70 @@ const ApplyTripModal = ({
                     </p>
                     <p className="text-xs text-gray-600">{asset.location}</p>
                   </div>
-                  <CategoryBadge type={asset.type} />
+                  <span className="text-sm font-semibold text-[#EC407A]">
+                    {(asset as any).value || ''}
+                  </span>
                 </div>
               ))}
             </div>
           </div>
-        ))}
+        )}
 
-        <div className="bg-pink-50 rounded-lg p-4 mb-6 border border-pink-200">
-          <div className="flex items-start gap-2">
-            <Sparkles className="w-4 h-4 text-[#EC407A] flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-semibold text-gray-900 mb-2">
-                What happens next?
-              </p>
-              <ul className="text-xs text-gray-700 space-y-1">
-                <li>• Your trip will be created and suppliers will be contacted</li>
-                <li>• You'll receive notifications when they respond</li>
-                <li>• Bookings will be confirmed based on availability</li>
-              </ul>
+        {/* Not Signed Assets - Will be AI Requested */}
+        {notSignedAssets.length > 0 && (
+          <div className="mb-6">
+            <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <Zap className="w-4 h-4 text-gray-600" />
+              AI Agent Will Contact ({notSignedAssets.length})
+            </h4>
+            <div className="space-y-2">
+              {notSignedAssets.map((asset) => (
+                <div
+                  key={asset.id}
+                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200"
+                >
+                  <img
+                    src={asset.image}
+                    alt={asset.name}
+                    className="w-12 h-12 rounded object-cover grayscale"
+                    onError={(e) => { (e.target as HTMLImageElement).src = ''; (e.target as HTMLImageElement).style.display = 'none'; }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {asset.name}
+                    </p>
+                    <p className="text-xs text-gray-600">{asset.location}</p>
+                  </div>
+                  <span className="text-xs text-gray-700 font-medium">
+                    AI Request
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
+        )}
+
+        {/* What Happens Next */}
+        {notSignedAssets.length > 0 && (
+          <div className="bg-pink-50 rounded-lg p-4 mb-6 border border-pink-200">
+            <div className="flex items-start gap-2">
+              <Sparkles className="w-4 h-4 text-[#EC407A] flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-gray-900 mb-2">
+                  What happens next?
+                </p>
+                <ul className="text-xs text-gray-700 space-y-1">
+                  <li>
+                    • AI agents automatically contact {notSignedAssets.length} non-partner supplier{notSignedAssets.length > 1 ? 's' : ''}
+                  </li>
+                  <li>• Suppliers learn about AirMango and your creator profile</li>
+                  <li>• You'll receive notifications when they respond (24-48h typical)</li>
+                  <li>• Available assets will be booked immediately</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="flex gap-3">
           <button
@@ -317,6 +406,12 @@ export const TravelArchitectDashboard = () => {
   const [searchResults, setSearchResults] = useState<google.maps.places.AutocompletePrediction[]>([]);
   const [showSearch, setShowSearch] = useState(false);
 
+  // Route
+  const [routePath, setRoutePath] = useState<google.maps.LatLngLiteral[]>([]);
+
+  // Image carousel
+  const [carouselIndex, setCarouselIndex] = useState(0);
+
   // Refs
   const mapRef = useRef<google.maps.Map | null>(null);
   const autocompleteServiceRef = useRef<google.maps.places.AutocompleteService | null>(null);
@@ -325,21 +420,48 @@ export const TravelArchitectDashboard = () => {
   // ---- PLACES FETCHING ----
 
   const normalizePlace = useCallback(
-    (place: google.maps.places.PlaceResult, type: PlaceAsset['type']): PlaceAsset => ({
-      id: place.place_id || `place-${Math.random().toString(36).slice(2)}`,
-      type,
-      name: place.name || 'Unknown Place',
-      location: place.formatted_address || place.vicinity || '',
-      coordinates: {
-        lat: place.geometry?.location?.lat() || 0,
-        lng: place.geometry?.location?.lng() || 0,
-      },
-      image: place.photos?.[0]?.getUrl({ maxWidth: 800, maxHeight: 500 }) || '',
-      rating: place.rating || 0,
-      reviews: place.user_ratings_total || 0,
-      status: 'available',
-      googlePlaceId: place.place_id || '',
-    }),
+    (place: google.maps.places.PlaceResult, type: PlaceAsset['type']): PlaceAsset => {
+      // Randomly assign allotment mode for demo
+      const rand = Math.random();
+      let allotmentType: PlaceAsset['allotmentType'];
+      let status: PlaceAsset['status'];
+      if (rand < 0.4) {
+        allotmentType = 'pre-approved';
+        status = 'available';
+      } else if (rand < 0.7) {
+        allotmentType = 'on-request';
+        status = 'available';
+      } else {
+        allotmentType = 'not-partner';
+        status = 'not-signed';
+      }
+
+      // Collect all available photos
+      const photos: string[] = [];
+      if (place.photos) {
+        place.photos.forEach((photo) => {
+          photos.push(photo.getUrl({ maxWidth: 800, maxHeight: 500 }));
+        });
+      }
+
+      return {
+        id: place.place_id || `place-${Math.random().toString(36).slice(2)}`,
+        type,
+        name: place.name || 'Unknown Place',
+        location: place.formatted_address || place.vicinity || '',
+        coordinates: {
+          lat: place.geometry?.location?.lat() || 0,
+          lng: place.geometry?.location?.lng() || 0,
+        },
+        image: photos[0] || '',
+        photos,
+        rating: place.rating || 0,
+        reviews: place.user_ratings_total || 0,
+        status,
+        allotmentType,
+        googlePlaceId: place.place_id || '',
+      };
+    },
     [],
   );
 
@@ -369,10 +491,11 @@ export const TravelArchitectDashboard = () => {
       }
     };
 
-    const handleResults = (type: PlaceAsset['type']) =>
-      (
+    const handleResults = (type: PlaceAsset['type']) => {
+      const handler = (
         results: google.maps.places.PlaceResult[] | null,
         status: google.maps.places.PlacesServiceStatus,
+        pagination: google.maps.places.PlaceSearchPagination | null,
       ) => {
         if (status === google.maps.places.PlacesServiceStatus.OK && results) {
           results.forEach((r) => {
@@ -380,26 +503,33 @@ export const TravelArchitectDashboard = () => {
               allResults.push(normalizePlace(r, type));
             }
           });
+          // Fetch next page if available (up to 60 per category)
+          if (pagination?.hasNextPage) {
+            setTimeout(() => pagination.nextPage(), 300);
+            return; // Don't call checkComplete yet
+          }
         }
         checkComplete();
       };
+      return handler;
+    };
 
     // 1. Tourist attractions
     service.textSearch(
       { query: `top tourist attractions in ${destination.name}` },
-      handleResults('attraction'),
+      handleResults('attraction') as any,
     );
 
     // 2. Hotels & accommodations
     service.textSearch(
       { query: `best hotels and accommodations in ${destination.name}` },
-      handleResults('hotel'),
+      handleResults('hotel') as any,
     );
 
     // 3. Tours & activities
     service.textSearch(
       { query: `tours and activities in ${destination.name}` },
-      handleResults('activity'),
+      handleResults('activity') as any,
     );
   }, [destination, normalizePlace]);
 
@@ -434,7 +564,7 @@ export const TravelArchitectDashboard = () => {
       autocompleteServiceRef.current.getPlacePredictions(
         {
           input: query,
-          types: ['(cities)'],
+          types: ['geocode'],
         },
         (predictions, status) => {
           if (
@@ -474,6 +604,12 @@ export const TravelArchitectDashboard = () => {
               },
               zoom: 8,
             };
+            // Detect if it's a country-level result → wider zoom
+            if (place.types?.includes('country')) {
+              newDest.zoom = 5;
+            } else if (place.types?.includes('administrative_area_level_1')) {
+              newDest.zoom = 6;
+            }
             setDestination(newDest);
             saveDestination(newDest);
             // Clear trip when switching destinations
@@ -554,6 +690,57 @@ export const TravelArchitectDashboard = () => {
   const tripPath = tripAssetsData
     .sort((a, b) => a.day - b.day)
     .map((a) => a.coordinates);
+
+  // Compute road-based route via Directions API
+  useEffect(() => {
+    if (tripPath.length < 2 || !isLoaded) {
+      setRoutePath([]);
+      return;
+    }
+    const directionsService = new google.maps.DirectionsService();
+    const origin = tripPath[0];
+    const destination = tripPath[tripPath.length - 1];
+    const waypoints = tripPath.slice(1, -1).map((pt) => ({
+      location: pt,
+      stopover: true,
+    }));
+    // Google limits to 25 waypoints
+    const limitedWaypoints = waypoints.slice(0, 23);
+
+    directionsService.route(
+      {
+        origin,
+        destination,
+        waypoints: limitedWaypoints,
+        travelMode: google.maps.TravelMode.DRIVING,
+        optimizeWaypoints: false,
+      },
+      (result, status) => {
+        console.log('[Directions API] Status:', status);
+        if (status === google.maps.DirectionsStatus.OK && result) {
+          const points: google.maps.LatLngLiteral[] = [];
+          result.routes[0]?.legs.forEach((leg) => {
+            leg.steps.forEach((step) => {
+              step.path.forEach((pt) => {
+                points.push({ lat: pt.lat(), lng: pt.lng() });
+              });
+            });
+          });
+          console.log('[Directions API] Got', points.length, 'route points');
+          setRoutePath(points);
+        } else {
+          console.warn('[Directions API] Failed:', status, '- Enable "Directions API" in Google Cloud Console if you see NOT_FOUND or REQUEST_DENIED');
+          // Fallback to straight line
+          setRoutePath(tripPath);
+        }
+      },
+    );
+  }, [tripPath.length, isLoaded, JSON.stringify(tripPath)]);
+
+  // Reset carousel when selecting different asset
+  useEffect(() => {
+    setCarouselIndex(0);
+  }, [selectedAsset?.id]);
 
   const attractionCount = allAssets.filter((a) => a.type === 'attraction').length;
   const hotelCount = allAssets.filter((a) => a.type === 'hotel').length;
@@ -729,13 +916,12 @@ export const TravelArchitectDashboard = () => {
                       <button
                         key={day}
                         onClick={() => setCurrentDay(day)}
-                        className={`flex-shrink-0 w-10 h-10 rounded-lg flex flex-col items-center justify-center text-sm font-semibold transition-all ${
-                          currentDay === day
-                            ? 'bg-[#EC407A] text-white shadow-lg scale-105'
-                            : dayHasAssets
-                              ? 'bg-pink-50 text-[#EC407A] border-2 border-pink-200 hover:bg-pink-100'
-                              : 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200'
-                        }`}
+                        className={`flex-shrink-0 w-10 h-10 rounded-lg flex flex-col items-center justify-center text-sm font-semibold transition-all ${currentDay === day
+                          ? 'bg-[#EC407A] text-white shadow-lg scale-105'
+                          : dayHasAssets
+                            ? 'bg-pink-50 text-[#EC407A] border-2 border-pink-200 hover:bg-pink-100'
+                            : 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200'
+                          }`}
                       >
                         <span>{day}</span>
                       </button>
@@ -749,74 +935,15 @@ export const TravelArchitectDashboard = () => {
                 className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-200 relative"
                 style={{ height: '580px' }}
               >
-                {/* Create Trip Button */}
+                {/* Create Trip Button - Direct action, no dropdown */}
                 <div className="absolute top-4 right-4 z-10">
                   <button
-                    onClick={() => setShowInstructions(!showInstructions)}
+                    onClick={() => setShowApplyModal(true)}
                     className="px-4 py-2.5 bg-black text-white rounded-full hover:bg-gray-800 transition-colors text-sm font-semibold flex items-center gap-2 shadow-lg hover:shadow-xl"
                   >
                     <Info className="w-4 h-4" />
                     Create a Trip
-                    <ChevronDown
-                      className={`w-4 h-4 transition-transform ${showInstructions ? 'rotate-180' : ''}`}
-                    />
                   </button>
-
-                  <AnimatePresence>
-                    {showInstructions && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="absolute top-full right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 p-4"
-                      >
-                        <h4 className="text-sm font-semibold text-gray-900 mb-2">
-                          How to Plan Your Trip
-                        </h4>
-                        <ul className="text-xs text-gray-700 space-y-2">
-                          <li className="flex items-start gap-2">
-                            <span className="flex-shrink-0 w-5 h-5 bg-pink-50 text-[#EC407A] rounded-full flex items-center justify-center text-xs font-bold">
-                              1
-                            </span>
-                            <span>
-                              Click on any marker on the map to view details
-                            </span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <span className="flex-shrink-0 w-5 h-5 bg-pink-50 text-[#EC407A] rounded-full flex items-center justify-center text-xs font-bold">
-                              2
-                            </span>
-                            <span>
-                              Select a day, then add places to your trip
-                            </span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <span className="flex-shrink-0 w-5 h-5 bg-pink-50 text-[#EC407A] rounded-full flex items-center justify-center text-xs font-bold">
-                              3
-                            </span>
-                            <span>
-                              Review your itinerary below the map
-                            </span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <span className="flex-shrink-0 w-5 h-5 bg-pink-50 text-[#EC407A] rounded-full flex items-center justify-center text-xs font-bold">
-                              4
-                            </span>
-                            <span>Click below to finalize your trip</span>
-                          </li>
-                        </ul>
-                        <button
-                          onClick={() => {
-                            setShowInstructions(false);
-                            setShowApplyModal(true);
-                          }}
-                          className="w-full mt-3 px-4 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors text-sm font-semibold"
-                        >
-                          Create a Trip
-                        </button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
                 </div>
 
                 {/* Filter Badges - Top Left */}
@@ -844,11 +971,10 @@ export const TravelArchitectDashboard = () => {
                       onClick={() =>
                         setFilterType(f.key === filterType ? null : f.key)
                       }
-                      className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all shadow-md ${
-                        filterType === f.key
-                          ? 'bg-[#EC407A] text-white'
-                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
-                      }`}
+                      className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all shadow-md ${filterType === f.key
+                        ? 'bg-[#EC407A] text-white'
+                        : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                        }`}
                     >
                       {f.label} ({f.count})
                     </button>
@@ -884,6 +1010,7 @@ export const TravelArchitectDashboard = () => {
                           isSelected,
                           isAdded,
                           isHovered,
+                          isNotPartner: asset.status === 'not-signed',
                         })}
                         onClick={() => setSelectedAsset(asset)}
                         onMouseOver={() => setHoveredAsset(asset.id)}
@@ -898,24 +1025,26 @@ export const TravelArchitectDashboard = () => {
                     );
                   })}
 
-                  {/* Trip Route Polyline */}
-                  {tripPath.length > 1 && (
+                  {/* Trip Route Polyline (road-based) */}
+                  {routePath.length > 1 && (
                     <PolylineF
-                      path={tripPath}
+                      path={routePath}
                       options={{
                         strokeColor: '#EC407A',
-                        strokeWeight: 3,
-                        strokeOpacity: 0.8,
-                        geodesic: true,
+                        strokeWeight: 4,
+                        strokeOpacity: 0.9,
+                        geodesic: false,
                         icons: [
                           {
                             icon: {
-                              path: 'M 0,-1 0,1',
+                              path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
                               strokeOpacity: 1,
                               scale: 3,
+                              fillColor: '#EC407A',
+                              fillOpacity: 1,
                             },
-                            offset: '0',
-                            repeat: '15px',
+                            offset: '50%',
+                            repeat: '150px',
                           },
                         ],
                       }}
@@ -1013,7 +1142,11 @@ export const TravelArchitectDashboard = () => {
                                 <img
                                   src={asset.image}
                                   alt={asset.name}
-                                  className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
+                                  className={`w-16 h-16 rounded-lg object-cover flex-shrink-0 ${asset.status === 'not-signed' ? 'grayscale opacity-70' : ''}`}
+                                  onError={(e) => {
+                                    const img = e.target as HTMLImageElement;
+                                    img.style.display = 'none';
+                                  }}
                                 />
                                 <div className="flex-1 min-w-0">
                                   <h4 className="text-sm font-semibold text-gray-900 mb-1">
@@ -1022,7 +1155,10 @@ export const TravelArchitectDashboard = () => {
                                   <p className="text-xs text-gray-600 mb-2">
                                     {asset.location}
                                   </p>
-                                  <CategoryBadge type={asset.type} />
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <CategoryBadge type={asset.type} />
+                                    <StatusBadge status={asset.status} allotmentType={asset.allotmentType} />
+                                  </div>
                                 </div>
                                 <button
                                   onClick={() =>
@@ -1058,11 +1194,64 @@ export const TravelArchitectDashboard = () => {
                   }}
                 >
                   <div className="relative flex-shrink-0">
-                    {selectedAsset.image ? (
+                    {selectedAsset.photos && selectedAsset.photos.length > 0 ? (
+                      <div className="relative w-full h-48 overflow-hidden">
+                        <div
+                          className="flex transition-transform duration-300 ease-in-out h-full"
+                          style={{ transform: `translateX(-${carouselIndex * 100}%)` }}
+                        >
+                          {selectedAsset.photos.map((photo, idx) => (
+                            <img
+                              key={idx}
+                              src={photo}
+                              alt={`${selectedAsset.name} ${idx + 1}`}
+                              className={`w-full h-48 object-cover flex-shrink-0 ${selectedAsset.status === 'not-signed' ? 'grayscale opacity-70' : ''}`}
+                              onError={(e) => {
+                                const img = e.target as HTMLImageElement;
+                                img.style.display = 'none';
+                              }}
+                            />
+                          ))}
+                        </div>
+                        {/* Carousel Controls */}
+                        {selectedAsset.photos.length > 1 && (
+                          <>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setCarouselIndex(Math.max(0, carouselIndex - 1)); }}
+                              className={`absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-all ${carouselIndex === 0 ? 'opacity-30' : 'opacity-100'}`}
+                              disabled={carouselIndex === 0}
+                            >
+                              <ChevronLeft className="w-4 h-4 text-gray-700" />
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setCarouselIndex(Math.min(selectedAsset.photos.length - 1, carouselIndex + 1)); }}
+                              className={`absolute right-12 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-all ${carouselIndex >= selectedAsset.photos.length - 1 ? 'opacity-30' : 'opacity-100'}`}
+                              disabled={carouselIndex >= selectedAsset.photos.length - 1}
+                            >
+                              <ChevronRight className="w-4 h-4 text-gray-700" />
+                            </button>
+                            {/* Dot Indicators */}
+                            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                              {selectedAsset.photos.slice(0, 10).map((_, idx) => (
+                                <button
+                                  key={idx}
+                                  onClick={(e) => { e.stopPropagation(); setCarouselIndex(idx); }}
+                                  className={`w-2 h-2 rounded-full transition-all ${idx === carouselIndex ? 'bg-white scale-125' : 'bg-white/50'}`}
+                                />
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ) : selectedAsset.image ? (
                       <img
                         src={selectedAsset.image}
                         alt={selectedAsset.name}
-                        className="w-full h-48 object-cover"
+                        className={`w-full h-48 object-cover ${selectedAsset.status === 'not-signed' ? 'grayscale opacity-70' : ''}`}
+                        onError={(e) => {
+                          const img = e.target as HTMLImageElement;
+                          img.style.display = 'none';
+                        }}
                       />
                     ) : (
                       <div className="w-full h-48 bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
@@ -1092,6 +1281,7 @@ export const TravelArchitectDashboard = () => {
 
                     <div className="flex items-center gap-2 mb-4">
                       <CategoryBadge type={selectedAsset.type} />
+                      <StatusBadge status={selectedAsset.status} allotmentType={selectedAsset.allotmentType} />
                     </div>
 
                     {selectedAsset.rating > 0 && (
@@ -1120,11 +1310,10 @@ export const TravelArchitectDashboard = () => {
                           <button
                             key={day}
                             onClick={() => setCurrentDay(day)}
-                            className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-semibold transition-all ${
-                              currentDay === day
-                                ? 'bg-[#EC407A] text-white'
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            }`}
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-semibold transition-all ${currentDay === day
+                              ? 'bg-[#EC407A] text-white'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                              }`}
                           >
                             {day}
                           </button>
@@ -1155,6 +1344,23 @@ export const TravelArchitectDashboard = () => {
                         </button>
                       )}
                     </div>
+
+                    {/* Not a partner yet - Info Box */}
+                    {selectedAsset.status === 'not-signed' && (
+                      <div className="mb-4 p-3 bg-pink-50 rounded-lg border border-pink-200">
+                        <div className="flex items-start gap-2">
+                          <Zap className="w-4 h-4 text-[#EC407A] flex-shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-xs font-semibold text-gray-900 mb-1">
+                              Not a partner yet
+                            </p>
+                            <p className="text-xs text-gray-700">
+                              Add to trip &amp; our AI agent will contact them about this request. We will let you know if they join
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Google Place Link */}
                     {selectedAsset.googlePlaceId && (
@@ -1199,7 +1405,7 @@ export const TravelArchitectDashboard = () => {
                       </p>
                     </div>
                   ) : (
-                    filteredAssets.slice(0, 20).map((asset) => {
+                    filteredAssets.map((asset) => {
                       const isAdded = tripItems.has(asset.id);
                       return (
                         <motion.div
@@ -1211,11 +1417,10 @@ export const TravelArchitectDashboard = () => {
                           }}
                           onMouseEnter={() => setHoveredAsset(asset.id)}
                           onMouseLeave={() => setHoveredAsset(null)}
-                          className={`bg-white border rounded-lg overflow-hidden hover:border-[#EC407A] transition-all cursor-pointer ${
-                            selectedAsset?.id === asset.id
-                              ? 'border-[#EC407A] ring-2 ring-pink-200'
-                              : 'border-gray-200'
-                          } ${isAdded ? 'ring-2 ring-pink-200' : ''}`}
+                          className={`bg-white border rounded-lg overflow-hidden hover:border-[#EC407A] transition-all cursor-pointer ${selectedAsset?.id === asset.id
+                            ? 'border-[#EC407A] ring-2 ring-pink-200'
+                            : 'border-gray-200'
+                            } ${isAdded ? 'ring-2 ring-pink-200' : ''}`}
                         >
                           <div className="flex gap-3 p-3">
                             <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 relative">
@@ -1223,7 +1428,11 @@ export const TravelArchitectDashboard = () => {
                                 <img
                                   src={asset.image}
                                   alt={asset.name}
-                                  className="w-full h-full object-cover"
+                                  className={`w-full h-full object-cover ${asset.status === 'not-signed' ? 'grayscale opacity-70' : ''}`}
+                                  onError={(e) => {
+                                    const img = e.target as HTMLImageElement;
+                                    img.style.display = 'none';
+                                  }}
                                 />
                               ) : (
                                 <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
@@ -1245,8 +1454,9 @@ export const TravelArchitectDashboard = () => {
                               <p className="text-xs text-gray-600 truncate mb-2">
                                 {asset.location}
                               </p>
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 flex-wrap">
                                 <CategoryBadge type={asset.type} />
+                                <StatusBadge status={asset.status} allotmentType={asset.allotmentType} />
                                 {asset.rating > 0 && (
                                   <span className="text-xs text-gray-500 flex items-center gap-0.5">
                                     <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
