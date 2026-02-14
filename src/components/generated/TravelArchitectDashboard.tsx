@@ -935,15 +935,67 @@ export const TravelArchitectDashboard = () => {
                 className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-200 relative"
                 style={{ height: '580px' }}
               >
-                {/* Create Trip Button - Direct action, no dropdown */}
+                {/* Create Trip Button with Instructions Dropdown */}
                 <div className="absolute top-4 right-4 z-10">
                   <button
-                    onClick={() => setShowApplyModal(true)}
+                    onClick={() => setShowInstructions(!showInstructions)}
                     className="px-4 py-2.5 bg-black text-white rounded-full hover:bg-gray-800 transition-colors text-sm font-semibold flex items-center gap-2 shadow-lg hover:shadow-xl"
                   >
                     <Info className="w-4 h-4" />
                     Create a Trip
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform ${showInstructions ? 'rotate-180' : ''}`}
+                    />
                   </button>
+
+                  <AnimatePresence>
+                    {showInstructions && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="absolute top-full right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 p-4"
+                      >
+                        <h4 className="text-sm font-semibold text-gray-900 mb-2">
+                          How to Plan Your Trip
+                        </h4>
+                        <ul className="text-xs text-gray-700 space-y-2">
+                          <li className="flex items-start gap-2">
+                            <span className="flex-shrink-0 w-5 h-5 bg-pink-50 text-[#EC407A] rounded-full flex items-center justify-center text-xs font-bold">
+                              1
+                            </span>
+                            <span>
+                              Click on any marker on the map to view asset details
+                            </span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="flex-shrink-0 w-5 h-5 bg-pink-50 text-[#EC407A] rounded-full flex items-center justify-center text-xs font-bold">
+                              2
+                            </span>
+                            <span>
+                              Add assets to your trip - pink markers are partners, gray ones trigger AI outreach
+                            </span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="flex-shrink-0 w-5 h-5 bg-pink-50 text-[#EC407A] rounded-full flex items-center justify-center text-xs font-bold">
+                              3
+                            </span>
+                            <span>
+                              Review your complete itinerary below the map
+                            </span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="flex-shrink-0 w-5 h-5 bg-pink-50 text-[#EC407A] rounded-full flex items-center justify-center text-xs font-bold">
+                              4
+                            </span>
+                            <span>
+                              Finalize your trip - AI agents contact non-partners automatically
+                            </span>
+                          </li>
+                        </ul>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 {/* Filter Badges - Top Left */}
