@@ -1339,7 +1339,8 @@ async function handleSubmit() {
         // Mark as submitted to bypass unload warning
         state.isSubmitted = true;
 
-        if (elements.successModal) elements.successModal.hidden = false;
+        // Redirect to thank-you page
+        window.location.href = 'thank-you';
 
         // Track successful submission
         trackEvent('form_submit_success', state.trip.title, `${state.days.length} days`);
