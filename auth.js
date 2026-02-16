@@ -539,7 +539,7 @@ function showAuthOverlay() {
         authElements.overlay.hidden = false;
         authElements.overlay.classList.add('visible');
     }
-    showLoginForm();
+    showSignupForm();
 }
 
 function hideAuthOverlay() {
