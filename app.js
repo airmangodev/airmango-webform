@@ -1340,7 +1340,7 @@ async function handleSubmit() {
         state.isSubmitted = true;
 
         // Redirect to thank-you page
-        window.location.href = 'thank-you';
+        window.location.href = 'https://form.airmango.com/thank-you';
 
         // Track successful submission
         trackEvent('form_submit_success', state.trip.title, `${state.days.length} days`);
