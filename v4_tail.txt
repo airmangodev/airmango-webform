@@ -1,0 +1,53 @@
+essing, no more chasing.</p>
+    <div class="status-grid">
+      <div class="s-card green"><div class="s-tag"><span class="s-dot"></span>Pre-Approved</div><h3>Allotment available</h3><p>This supplier has set aside rooms, cars, or experiences for Travel Architects. Add to your trip — confirmed instantly.</p></div>
+      <div class="s-card blue"><div class="s-tag"><span class="s-dot"></span>Open to Requests</div><h3>Partner supplier</h3><p>On the platform and accepting requests. They see your profile and past work. One click — no pitch deck.</p></div>
+      <div class="s-card amber"><div class="s-tag"><span class="s-dot"></span>Not Yet on Airmango</div><h3>AI outreach</h3><p>Add them anyway. Our AI contacts them with an offer they've never heard before: a permanent, bookable trip that drives guests year after year.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- FLYWHEEL -->
+<section class="flywheel">
+  <div class="fly-wrap">
+    <div class="eyebrow">Why suppliers say yes</div>
+    <h2 class="sec-title">Evergreen trip packages beat one-time barter deals.</h2>
+    <p class="sec-sub">When our AI reaches out to a new supplier, it's not asking for a freebie. It's offering something genuinely better.</p>
+    <div class="fly-steps">
+      <div class="fly-step"><div class="fly-num">1</div><div><h4>You build a trip with a new hotel</h4><p>Add a boutique hotel to your Iceland itinerary. They're not on Airmango yet — that's fine.</p></div></div>
+      <div class="fly-step"><div class="fly-num">2</div><div><h4>Our AI reaches out on your behalf</h4><p>"A creator is building an evergreen trip package featuring your hotel. Not a one-time Instagram story — a permanent, bookable itinerary."</p></div></div>
+      <div class="fly-step"><div class="fly-num">3</div><div><h4>The supplier sees the difference</h4><p>Their property featured in a curated trip driving travelers year after year. Direct bookings, no OTA commissions.</p></div></div>
+      <div class="fly-step"><div class="fly-num">4</div><div><h4>They join — and stay for everyone</h4><p>Once on the platform, that supplier is available to every Travel Architect. Every new trip makes the network stronger.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- SUPPLIERS -->
+<section class="suppliers" id="suppliers">
+  <div class="sec-wrap" style="text-align:center">
+    <div class="eyebrow">For travel suppliers</div>
+    <h2 class="sec-title">Stop trading free nights for content that disappears.</h2>
+    <div class="sup-box">
+      <h3>Evergreen travel packages, not one-time posts.</h3>
+      <p>When a Travel Architect features your property, it becomes a permanent, bookable itinerary — with direct booking links, no OTA commissions, and real demand intelligence.</p>
+      <a href="/cdn-cgi/l/email-protection#9aeafbe8eef4ffe8e9dafbf3e8f7fbf4fdf5b4f9f5f7a5e9eff8f0fff9eea7c9efeaeaf6f3ffe8bfa8aac8fffdf3e9eee8fbeef3f5f4" class="btn btn-fill">Register Your Business <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot">
+    <span>&copy; 2026 Airmango Holding Inc.</span>
+    <div class="foot-links">
+      <a href="https://www.buubble.com">buubble.com</a>
+      <a href="https://www.buubble.com/terms/">Terms</a>
+      <a href="https://www.buubble.com/privacy-policy/">Privacy</a>
+    </div>
+  </div>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+const n=document.getElementById('nav');
+window.addEventListener('scroll',()=>n.classList.toggle('shadow',scrollY>30));
+const io=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting){x.target.style.opacity='1';x.target.style.transform='translateY(0)'}})},{threshold:.08,rootMargin:'0px 0px -30px 0px'});
+document.querySelectorAll('.prob-card,.how-card,.s-card,.fly-step,.sup-box').forEach((el,i)=
