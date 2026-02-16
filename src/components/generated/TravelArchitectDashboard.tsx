@@ -99,7 +99,14 @@ const saveDestination = (dest: Destination) => {
   localStorage.setItem('airmango_destination', JSON.stringify(dest));
 };
 
-// Circular markers matching original style: all pink for partners, gray for not-signed
+// Per-type marker colors: green for hotels, amber for attractions, purple for activities
+const MARKER_COLORS: Record<string, string> = {
+  hotel: '#2d6437',      // dark green
+  attraction: '#c2742e', // warm amber
+  activity: '#7b5ea7',   // muted purple
+};
+
+// Circular markers with unique colors per type, gray for not-signed
 const createMarkerSvg = (
   type: string,
   opts: { isSelected?: boolean; isAdded?: boolean; isHovered?: boolean; isNotPartner?: boolean } = {},
@@ -109,7 +116,7 @@ const createMarkerSvg = (
   const r = size / 2 - 4; // radius for inner circle
   const cx = size / 2;
   const cy = size / 2;
-  const color = isNotPartner ? '#9CA3AF' : '#EC407A';
+  const color = isNotPartner ? '#9CA3AF' : (MARKER_COLORS[type] || '#2d6437');
 
   // Simple recognizable icon shapes (white, centered in circle)
   let iconSvg = '';
@@ -135,13 +142,13 @@ const createMarkerSvg = (
   // Checkmark badge when added to trip
   let badge = '';
   if (isAdded) {
-    badge = `<circle cx="${size - 7}" cy="7" r="7" fill="#EC407A" stroke="white" stroke-width="2.5"/><path d="M${size - 10} 7l2 2 4-4" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+    badge = `<circle cx="${size - 7}" cy="7" r="7" fill="#2d6437" stroke="white" stroke-width="2.5"/><path d="M${size - 10} 7l2 2 4-4" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
   }
 
   // Ring effect when added
   let ring = '';
   if (isAdded) {
-    ring = `<circle cx="${cx}" cy="${cy}" r="${r + 5}" fill="none" stroke="#EC407A" stroke-width="3" opacity="0.5"/>`;
+    ring = `<circle cx="${cx}" cy="${cy}" r="${r + 5}" fill="none" stroke="#2d6437" stroke-width="3" opacity="0.5"/>`;
   }
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size + 10}" height="${size + 10}" viewBox="-5 -5 ${size + 10} ${size + 10}">
@@ -166,7 +173,7 @@ const createMarkerSvg = (
 const CategoryBadge = ({ type }: { type: string }) => {
   const styles: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
     hotel: {
-      bg: 'bg-pink-50 text-pink-600 border-pink-200',
+      bg: 'bg-green-50 text-green-700 border-green-200',
       text: 'Hotel',
       icon: <Hotel className="w-3 h-3" />,
     },
@@ -176,7 +183,7 @@ const CategoryBadge = ({ type }: { type: string }) => {
       icon: <Car className="w-3 h-3" />,
     },
     activity: {
-      bg: 'bg-pink-50 text-pink-600 border-pink-200',
+      bg: 'bg-green-50 text-green-700 border-green-200',
       text: 'Activity',
       icon: <Mountain className="w-3 h-3" />,
     },
@@ -206,7 +213,7 @@ const StatusBadge = ({
 }) => {
   if (status === 'available') {
     return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#EC407A] text-white">
+      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#2d6437] text-white">
         <CheckCircle2 className="w-3 h-3" />
         {allotmentType === 'pre-approved' ? 'Pre-Approved' : 'On Request'}
       </span>
@@ -252,8 +259,8 @@ const ApplyTripModal = ({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start gap-3 mb-6">
-          <div className="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center flex-shrink-0">
-            <Zap className="w-5 h-5 text-[#EC407A]" />
+          <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0">
+            <Zap className="w-5 h-5 text-[#2d6437]" />
           </div>
           <div>
             <h3 className="font-semibold text-gray-900 text-xl mb-1">
@@ -269,14 +276,14 @@ const ApplyTripModal = ({
         {availableAssets.length > 0 && (
           <div className="mb-4">
             <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-[#EC407A]" />
+              <CheckCircle2 className="w-4 h-4 text-[#2d6437]" />
               Ready to Book ({availableAssets.length})
             </h4>
             <div className="space-y-2">
               {availableAssets.map((asset) => (
                 <div
                   key={asset.id}
-                  className="flex items-center gap-3 p-3 bg-pink-50 rounded-lg border border-pink-200"
+                  className="flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-200"
                 >
                   <img
                     src={asset.image}
@@ -290,7 +297,7 @@ const ApplyTripModal = ({
                     </p>
                     <p className="text-xs text-gray-600">{asset.location}</p>
                   </div>
-                  <span className="text-sm font-semibold text-[#EC407A]">
+                  <span className="text-sm font-semibold text-[#2d6437]">
                     {(asset as any).value || ''}
                   </span>
                 </div>
@@ -335,9 +342,9 @@ const ApplyTripModal = ({
 
         {/* What Happens Next */}
         {notSignedAssets.length > 0 && (
-          <div className="bg-pink-50 rounded-lg p-4 mb-6 border border-pink-200">
+          <div className="bg-green-50 rounded-lg p-4 mb-6 border border-green-200">
             <div className="flex items-start gap-2">
-              <Sparkles className="w-4 h-4 text-[#EC407A] flex-shrink-0 mt-0.5" />
+              <Sparkles className="w-4 h-4 text-[#2d6437] flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-semibold text-gray-900 mb-2">
                   What happens next?
@@ -729,9 +736,9 @@ export const TravelArchitectDashboard = () => {
           console.log('[Directions API] Got', points.length, 'route points');
           setRoutePath(points);
         } else {
-          console.warn('[Directions API] Failed:', status, '- Enable "Directions API" in Google Cloud Console if you see NOT_FOUND or REQUEST_DENIED');
-          // Fallback to straight line
-          setRoutePath(tripPath);
+          console.warn('[Directions API] Failed:', status, '- No road route available for these locations');
+          // Don't draw straight lines on failure — hide route instead
+          setRoutePath([]);
         }
       },
     );
@@ -768,7 +775,7 @@ export const TravelArchitectDashboard = () => {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center">
-          <Loader className="w-8 h-8 text-[#EC407A] animate-spin mx-auto mb-4" />
+          <Loader className="w-8 h-8 text-[#2d6437] animate-spin mx-auto mb-4" />
           <p className="text-sm text-gray-600">Loading maps...</p>
         </div>
       </div>
@@ -785,7 +792,7 @@ export const TravelArchitectDashboard = () => {
           <div className="flex items-center gap-4">
             <div className="text-xl font-normal tracking-tight">
               <span className="text-gray-900">Air</span>
-              <span className="text-[#EC407A]">mango</span>
+              <span className="text-[#2d6437]">mango</span>
             </div>
           </div>
 
@@ -839,7 +846,7 @@ export const TravelArchitectDashboard = () => {
                         value={searchQuery}
                         onChange={(e) => handleSearchChange(e.target.value)}
                         placeholder="Search city or country..."
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#EC407A] focus:border-transparent"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2d6437] focus:border-transparent"
                         autoFocus
                       />
                       {searchResults.length > 0 && (
@@ -850,7 +857,7 @@ export const TravelArchitectDashboard = () => {
                               onClick={() =>
                                 handleSelectDestination(prediction)
                               }
-                              className="w-full text-left px-3 py-2.5 text-sm text-gray-700 hover:bg-pink-50 hover:text-[#EC407A] rounded-lg transition-colors flex items-center gap-2"
+                              className="w-full text-left px-3 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-[#2d6437] rounded-lg transition-colors flex items-center gap-2"
                             >
                               <MapPin className="w-4 h-4 flex-shrink-0 text-gray-400" />
                               <span className="truncate">
@@ -879,7 +886,7 @@ export const TravelArchitectDashboard = () => {
               {tripItems.size > 0 && (
                 <>
                   <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
-                  <span className="px-3 py-1 bg-[#EC407A] text-white text-xs rounded-full font-medium">
+                  <span className="px-3 py-1 bg-[#2d6437] text-white text-xs rounded-full font-medium">
                     {tripItems.size} Asset{tripItems.size > 1 ? 's' : ''} Added
                   </span>
                 </>
@@ -917,9 +924,9 @@ export const TravelArchitectDashboard = () => {
                         key={day}
                         onClick={() => setCurrentDay(day)}
                         className={`flex-shrink-0 w-10 h-10 rounded-lg flex flex-col items-center justify-center text-sm font-semibold transition-all ${currentDay === day
-                          ? 'bg-[#EC407A] text-white shadow-lg scale-105'
+                          ? 'bg-[#2d6437] text-white shadow-lg scale-105'
                           : dayHasAssets
-                            ? 'bg-pink-50 text-[#EC407A] border-2 border-pink-200 hover:bg-pink-100'
+                            ? 'bg-green-50 text-[#2d6437] border-2 border-green-200 hover:bg-green-100'
                             : 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200'
                           }`}
                       >
@@ -961,7 +968,7 @@ export const TravelArchitectDashboard = () => {
                         </h4>
                         <ul className="text-xs text-gray-700 space-y-2">
                           <li className="flex items-start gap-2">
-                            <span className="flex-shrink-0 w-5 h-5 bg-pink-50 text-[#EC407A] rounded-full flex items-center justify-center text-xs font-bold">
+                            <span className="flex-shrink-0 w-5 h-5 bg-green-50 text-[#2d6437] rounded-full flex items-center justify-center text-xs font-bold">
                               1
                             </span>
                             <span>
@@ -969,15 +976,15 @@ export const TravelArchitectDashboard = () => {
                             </span>
                           </li>
                           <li className="flex items-start gap-2">
-                            <span className="flex-shrink-0 w-5 h-5 bg-pink-50 text-[#EC407A] rounded-full flex items-center justify-center text-xs font-bold">
+                            <span className="flex-shrink-0 w-5 h-5 bg-green-50 text-[#2d6437] rounded-full flex items-center justify-center text-xs font-bold">
                               2
                             </span>
                             <span>
-                              Add assets to your trip - pink markers are partners, gray ones trigger AI outreach
+                              Add assets to your trip - green markers are partners, gray ones trigger AI outreach
                             </span>
                           </li>
                           <li className="flex items-start gap-2">
-                            <span className="flex-shrink-0 w-5 h-5 bg-pink-50 text-[#EC407A] rounded-full flex items-center justify-center text-xs font-bold">
+                            <span className="flex-shrink-0 w-5 h-5 bg-green-50 text-[#2d6437] rounded-full flex items-center justify-center text-xs font-bold">
                               3
                             </span>
                             <span>
@@ -985,7 +992,7 @@ export const TravelArchitectDashboard = () => {
                             </span>
                           </li>
                           <li className="flex items-start gap-2">
-                            <span className="flex-shrink-0 w-5 h-5 bg-pink-50 text-[#EC407A] rounded-full flex items-center justify-center text-xs font-bold">
+                            <span className="flex-shrink-0 w-5 h-5 bg-green-50 text-[#2d6437] rounded-full flex items-center justify-center text-xs font-bold">
                               4
                             </span>
                             <span>
@@ -1024,7 +1031,7 @@ export const TravelArchitectDashboard = () => {
                         setFilterType(f.key === filterType ? null : f.key)
                       }
                       className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all shadow-md ${filterType === f.key
-                        ? 'bg-[#EC407A] text-white'
+                        ? 'bg-[#2d6437] text-white'
                         : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
                         }`}
                     >
@@ -1082,7 +1089,7 @@ export const TravelArchitectDashboard = () => {
                     <PolylineF
                       path={routePath}
                       options={{
-                        strokeColor: '#EC407A',
+                        strokeColor: '#2d6437',
                         strokeWeight: 4,
                         strokeOpacity: 0.9,
                         geodesic: false,
@@ -1092,7 +1099,7 @@ export const TravelArchitectDashboard = () => {
                               path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
                               strokeOpacity: 1,
                               scale: 3,
-                              fillColor: '#EC407A',
+                              fillColor: '#2d6437',
                               fillOpacity: 1,
                             },
                             offset: '50%',
@@ -1128,7 +1135,7 @@ export const TravelArchitectDashboard = () => {
                 {loading && (
                   <div className="absolute inset-0 bg-white/60 flex items-center justify-center z-[5]">
                     <div className="bg-white rounded-xl px-6 py-4 shadow-lg flex items-center gap-3">
-                      <Loader className="w-5 h-5 text-[#EC407A] animate-spin" />
+                      <Loader className="w-5 h-5 text-[#2d6437] animate-spin" />
                       <span className="text-sm font-medium text-gray-700">
                         Loading {destination.name} places...
                       </span>
@@ -1174,7 +1181,7 @@ export const TravelArchitectDashboard = () => {
                         <div key={day} className="space-y-3">
                           <div className="flex items-center gap-3">
                             <div className="flex items-center gap-2">
-                              <Calendar className="w-4 h-4 text-[#EC407A]" />
+                              <Calendar className="w-4 h-4 text-[#2d6437]" />
                               <h4 className="text-sm font-bold text-gray-900">
                                 Day {day}
                               </h4>
@@ -1363,7 +1370,7 @@ export const TravelArchitectDashboard = () => {
                             key={day}
                             onClick={() => setCurrentDay(day)}
                             className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-semibold transition-all ${currentDay === day
-                              ? 'bg-[#EC407A] text-white'
+                              ? 'bg-[#2d6437] text-white'
                               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                               }`}
                           >
@@ -1388,7 +1395,7 @@ export const TravelArchitectDashboard = () => {
                           onClick={() =>
                             handleRemoveFromTrip(selectedAsset.id)
                           }
-                          className="w-full px-4 py-3 bg-white text-[#EC407A] rounded-full hover:bg-pink-50 transition-colors flex items-center justify-center gap-2 font-semibold border-2 border-[#EC407A]"
+                          className="w-full px-4 py-3 bg-white text-[#2d6437] rounded-full hover:bg-green-50 transition-colors flex items-center justify-center gap-2 font-semibold border-2 border-[#2d6437]"
                         >
                           <Check className="w-4 h-4" />
                           Added to Day{' '}
@@ -1399,9 +1406,9 @@ export const TravelArchitectDashboard = () => {
 
                     {/* Not a partner yet - Info Box */}
                     {selectedAsset.status === 'not-signed' && (
-                      <div className="mb-4 p-3 bg-pink-50 rounded-lg border border-pink-200">
+                      <div className="mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
                         <div className="flex items-start gap-2">
-                          <Zap className="w-4 h-4 text-[#EC407A] flex-shrink-0 mt-0.5" />
+                          <Zap className="w-4 h-4 text-[#2d6437] flex-shrink-0 mt-0.5" />
                           <div>
                             <p className="text-xs font-semibold text-gray-900 mb-1">
                               Not a partner yet
@@ -1420,7 +1427,7 @@ export const TravelArchitectDashboard = () => {
                         href={`https://www.google.com/maps/place/?q=place_id:${selectedAsset.googlePlaceId}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs text-[#EC407A] hover:underline flex items-center gap-1"
+                        className="text-xs text-[#2d6437] hover:underline flex items-center gap-1"
                       >
                         <Compass className="w-3 h-3" />
                         View on Google Maps
@@ -1444,7 +1451,7 @@ export const TravelArchitectDashboard = () => {
                 <div className="p-3 space-y-2 max-h-[600px] overflow-y-auto">
                   {loading ? (
                     <div className="p-8 text-center">
-                      <Loader className="w-6 h-6 text-[#EC407A] animate-spin mx-auto mb-3" />
+                      <Loader className="w-6 h-6 text-[#2d6437] animate-spin mx-auto mb-3" />
                       <p className="text-xs text-gray-500">
                         Loading places...
                       </p>
@@ -1469,10 +1476,10 @@ export const TravelArchitectDashboard = () => {
                           }}
                           onMouseEnter={() => setHoveredAsset(asset.id)}
                           onMouseLeave={() => setHoveredAsset(null)}
-                          className={`bg-white border rounded-lg overflow-hidden hover:border-[#EC407A] transition-all cursor-pointer ${selectedAsset?.id === asset.id
-                            ? 'border-[#EC407A] ring-2 ring-pink-200'
+                          className={`bg-white border rounded-lg overflow-hidden hover:border-[#2d6437] transition-all cursor-pointer ${selectedAsset?.id === asset.id
+                            ? 'border-[#2d6437] ring-2 ring-green-200'
                             : 'border-gray-200'
-                            } ${isAdded ? 'ring-2 ring-pink-200' : ''}`}
+                            } ${isAdded ? 'ring-2 ring-green-200' : ''}`}
                         >
                           <div className="flex gap-3 p-3">
                             <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 relative">
@@ -1492,8 +1499,8 @@ export const TravelArchitectDashboard = () => {
                                 </div>
                               )}
                               {isAdded && (
-                                <div className="absolute inset-0 bg-[#EC407A]/20 flex items-center justify-center">
-                                  <div className="w-5 h-5 bg-[#EC407A] rounded-full flex items-center justify-center">
+                                <div className="absolute inset-0 bg-[#2d6437]/20 flex items-center justify-center">
+                                  <div className="w-5 h-5 bg-[#2d6437] rounded-full flex items-center justify-center">
                                     <Check className="w-3 h-3 text-white" />
                                   </div>
                                 </div>
