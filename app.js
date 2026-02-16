@@ -1339,8 +1339,8 @@ async function handleSubmit() {
         // Mark as submitted to bypass unload warning
         state.isSubmitted = true;
 
-        // Redirect to thank-you page
-        window.location.href = 'https://form.airmango.com/thank-you';
+        // Redirect to thank-you page (trailing slash prevents Traefik/Coolify internal redirect)
+        window.location.href = 'https://form.airmango.com/thank-you/';
 
         // Track successful submission
         trackEvent('form_submit_success', state.trip.title, `${state.days.length} days`);
