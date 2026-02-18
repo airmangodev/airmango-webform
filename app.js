@@ -46,7 +46,7 @@ const CONFIG = {
     finalSubmissionWebhook: 'https://n8n.restaurantreykjavik.com/webhook/new-form-trip-submission',
     linkClickWebhook: 'https://n8n.restaurantreykjavik.com/webhook/link-clicked',
     signupWebhook: 'https://n8n.restaurantreykjavik.com/webhook/user-signed-up',
-    tripSubmittedWebhook: 'https://n8n.restaurantreykjavik.com/webhook/trip-submitted',
+    tripSubmittedWebhook: 'https://n8n.restaurantreykjavik.com/webhook/trip_submitted',
     maxVideoSize: 1024 * 1024 * 1024,
     maxImageSize: 50 * 1024 * 1024,
     maxConcurrentUploads: 2,
@@ -1360,10 +1360,11 @@ async function handleSubmit() {
         // Clear lastOpenTripId so user sees dashboard when they come back
         localStorage.removeItem('lastOpenTripId');
 
-        // Fire trip-submitted webhook (POST with no-cors, avoids CORS issues)
+        // Fire trip-submitted webhook (POST, no-cors, keepalive)
         fetch(CONFIG.tripSubmittedWebhook, {
             method: 'POST',
             mode: 'no-cors',
+            keepalive: true,
             headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({
                 event: 'trip_submitted',
