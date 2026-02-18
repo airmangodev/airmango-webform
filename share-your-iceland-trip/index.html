@@ -1,305 +1,781 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Share Your Iceland | The 5 Million Star Hotel by Buubble</title>
-<meta name="description" content="Captured something stunning in Iceland? Submit your best travel photos and videos. Accepted creators earn a free night at the famous bubble hotel.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
-<style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Share Your Iceland | The 5 Million Star Hotel by Buubble</title>
+  <meta name="description"
+    content="Captured something stunning in Iceland? Submit your best travel photos and videos. Accepted creators earn a free night at the famous bubble hotel.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap"
+    rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
 
-:root{
-  --white:#faf8f0;
-  --bg:#f2efe6;
-  --bg2:#e9e5d9;
-  --card:#faf8f0;
-  --navy:#1a2e1c;
-  --navy2:#2a3f2c;
-  --text:#1a2e1c;
-  --text2:#6b705c;
-  --text3:#8a8e7c;
-  --accent:#2d6437;
-  --accent-light:rgba(45,100,55,0.08);
-  --green:#2d6437;
-  --green-bg:rgba(45,100,55,0.08);
-  --red-muted:#984848;
-  --red-bg:#fcf0f0;
-  --border:rgba(26,46,28,0.08);
-  --radius:12px;
-  --f:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-}
+    :root {
+      --white: #faf8f0;
+      --bg: #f2efe6;
+      --bg2: #e9e5d9;
+      --card: #faf8f0;
+      --navy: #1a2e1c;
+      --navy2: #2a3f2c;
+      --text: #1a2e1c;
+      --text2: #6b705c;
+      --text3: #8a8e7c;
+      --accent: #2d6437;
+      --accent-light: rgba(45, 100, 55, 0.08);
+      --green: #2d6437;
+      --green-bg: rgba(45, 100, 55, 0.08);
+      --red-muted: #984848;
+      --red-bg: #fcf0f0;
+      --border: rgba(26, 46, 28, 0.08);
+      --radius: 12px;
+      --f: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
 
-html{scroll-behavior:smooth}
-body{font-family:var(--f);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;overflow-x:hidden;font-size:15px}
+    html {
+      scroll-behavior: smooth
+    }
 
-/* NAV */
-.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 2.5rem;height:60px;display:flex;align-items:center;justify-content:space-between;background:rgba(247,247,245,.8);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);transition:box-shadow .3s}
-.nav.shadow{box-shadow:0 1px 8px rgba(0,0,0,.04)}
-.nav-brand{font-weight:800;font-size:1.05rem;color:var(--navy);text-decoration:none;letter-spacing:-.04em}
-.nav-right{display:flex;align-items:center;gap:1rem}
-.nav-right a{font-size:.835rem;font-weight:500;text-decoration:none;color:var(--text2);transition:color .2s}
-.nav-right a:hover{color:var(--navy)}
-.nav-accent{background:var(--navy)!important;color:var(--white)!important;padding:.42rem 1rem;border-radius:8px;font-weight:600!important;transition:opacity .2s!important}
-.nav-accent:hover{opacity:.85!important}
+    body {
+      font-family: var(--f);
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      font-size: 15px
+    }
 
-/* HERO */
-.hero{padding:8rem 2.5rem 5rem;text-align:center;background:var(--bg)}
-.hero-inner{max-width:640px;margin:0 auto}
+    /* NAV */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 0 2.5rem;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(247, 247, 245, .8);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      transition: box-shadow .3s
+    }
 
-.hero-chip{display:inline-flex;align-items:center;gap:.4rem;padding:.3rem .85rem;background:var(--accent-light);border:1px solid rgba(51,97,255,.12);border-radius:99px;font-size:.72rem;font-weight:600;color:var(--accent);margin-bottom:1.75rem}
+    .nav.shadow {
+      box-shadow: 0 1px 8px rgba(0, 0, 0, .04)
+    }
 
-.hero h1{font-size:clamp(2.2rem,5vw,3.4rem);font-weight:800;line-height:1.1;letter-spacing:-.045em;color:var(--navy);margin-bottom:1.25rem}
-.hero h1 span{color:var(--accent)}
+    .nav-brand {
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: var(--navy);
+      text-decoration: none;
+      letter-spacing: -.04em
+    }
 
-.hero-sub{font-size:1.05rem;line-height:1.7;color:var(--text2);max-width:480px;margin:0 auto 2rem}
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem
+    }
 
-.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.7rem 1.5rem;font-family:var(--f);font-size:.88rem;font-weight:600;text-decoration:none;border-radius:9px;transition:all .2s ease;border:none;cursor:pointer}
-.btn svg{width:15px;height:15px}
-.btn-fill{background:var(--navy);color:var(--white)}.btn-fill:hover{opacity:.88;transform:translateY(-1px)}
-.btn-outline{background:transparent;color:var(--text2);border:1px solid var(--border)}.btn-outline:hover{border-color:var(--navy);color:var(--navy)}
+    .nav-right a {
+      font-size: .835rem;
+      font-weight: 500;
+      text-decoration: none;
+      color: var(--text2);
+      transition: color .2s
+    }
 
-/* SECTIONS */
-.sec{padding:6rem 2.5rem}
-.sec-wrap{max-width:900px;margin:0 auto}
-.eyebrow{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:.8rem}
-.sec-title{font-size:clamp(1.6rem,3vw,2.3rem);font-weight:800;line-height:1.18;letter-spacing:-.035em;color:var(--navy);margin-bottom:.75rem}
-.sec-sub{font-size:.95rem;line-height:1.7;color:var(--text2);max-width:520px;margin-bottom:2.5rem}
+    .nav-right a:hover {
+      color: var(--navy)
+    }
 
-/* QUALITY */
-.quality{background:var(--white);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
-.qual-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
-.qual-card{border:1px solid var(--border);border-radius:var(--radius);padding:1.6rem;transition:box-shadow .25s}
-.qual-card:hover{box-shadow:0 4px 20px rgba(12,20,33,.05)}
-.qual-card.yes{background:var(--green-bg);border-color:rgba(26,138,82,.12)}
-.qual-card.no{background:var(--red-bg);border-color:rgba(152,72,72,.1)}
-.qual-card h3{font-size:1rem;font-weight:700;margin-bottom:.75rem;letter-spacing:-.02em}
-.qual-card.yes h3{color:var(--green)}
-.qual-card.no h3{color:var(--red-muted)}
-.qual-card ul{list-style:none}
-.qual-card li{padding:.3rem 0 .3rem 1.4rem;font-size:.85rem;color:var(--text2);line-height:1.55;position:relative}
-.qual-card.yes li::before{content:'✓';position:absolute;left:0;color:var(--green);font-weight:700;font-size:.8rem}
-.qual-card.no li::before{content:'✕';position:absolute;left:0;color:var(--red-muted);font-weight:700;font-size:.8rem}
+    .nav-accent {
+      background: var(--navy) !important;
+      color: var(--white) !important;
+      padding: .42rem 1rem;
+      border-radius: 8px;
+      font-weight: 600 !important;
+      transition: opacity .2s !important
+    }
 
-/* STEPS */
-.steps{background:var(--bg)}
-.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem}
-.step-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.6rem;text-align:center;transition:box-shadow .25s}
-.step-card:hover{box-shadow:0 4px 20px rgba(12,20,33,.05)}
-.step-num{width:32px;height:32px;border-radius:8px;background:var(--navy);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;margin:0 auto 1rem}
-.step-card h3{font-size:.95rem;font-weight:700;color:var(--navy);margin-bottom:.35rem;letter-spacing:-.02em}
-.step-card p{font-size:.85rem;line-height:1.6;color:var(--text2)}
+    .nav-accent:hover {
+      opacity: .85 !important
+    }
 
-/* REWARD */
-.reward{background:var(--bg2);padding:6rem 2.5rem;text-align:center;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
-.reward-inner{max-width:560px;margin:0 auto}
-.reward .sec-sub{text-align:center;margin:0 auto 1.5rem}
+    /* HERO */
+    .hero {
+      padding: 8rem 2.5rem 5rem;
+      text-align: center;
+      background: var(--bg)
+    }
 
-.reward-stats{display:flex;justify-content:center;gap:2.5rem;margin:2rem 0 2.5rem;flex-wrap:wrap}
-.r-stat{text-align:center}
-.r-stat .num{font-size:1.8rem;font-weight:800;color:var(--navy);display:block;letter-spacing:-.03em}
-.r-stat .lbl{font-size:.68rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-top:.15rem}
+    .hero-inner {
+      max-width: 640px;
+      margin: 0 auto
+    }
 
-/* TRAVEL ARCHITECT */
-.ta{background:var(--white);border-top:1px solid var(--border)}
-.ta-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;position:relative;overflow:hidden;margin-top:.5rem}
-.ta-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--green))}
-.ta-card h3{font-size:1.1rem;font-weight:700;color:var(--navy);margin-bottom:.75rem;letter-spacing:-.02em}
-.ta-card p{font-size:.9rem;line-height:1.7;color:var(--text2);margin-bottom:.75rem}
-.ta-card p.bold{color:var(--navy);font-weight:600}
-.ta-link{display:inline-flex;align-items:center;gap:.35rem;color:var(--accent);font-weight:600;text-decoration:none;font-size:.88rem;transition:gap .2s}
-.ta-link:hover{gap:.65rem}
+    .hero-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      padding: .3rem .85rem;
+      background: var(--accent-light);
+      border: 1px solid rgba(51, 97, 255, .12);
+      border-radius: 99px;
+      font-size: .72rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 1.75rem
+    }
 
-/* FINAL CTA */
-.final{background:var(--bg);border-top:1px solid var(--border);padding:5rem 2.5rem;text-align:center}
-.final-inner{max-width:520px;margin:0 auto}
-.final .sec-title{margin-bottom:.5rem}
-.final .sec-sub{text-align:center;margin:0 auto 1.5rem}
+    .hero h1 {
+      font-size: clamp(2.2rem, 5vw, 3.4rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -.045em;
+      color: var(--navy);
+      margin-bottom: 1.25rem
+    }
 
-/* FOOTER */
-footer{background:var(--bg);border-top:1px solid var(--border);padding:1.75rem 2.5rem;text-align:center}
-footer p{font-size:.75rem;color:var(--text3)}
-footer a{color:var(--text3);text-decoration:none;transition:color .2s}
-footer a:hover{color:var(--navy)}
+    .hero h1 span {
+      color: var(--accent)
+    }
 
-/* RESPONSIVE */
-@media(max-width:768px){
-  .qual-grid,.steps-grid{grid-template-columns:1fr}
-  .reward-stats{gap:1.5rem}
-  .nav .nav-right span{display:none}
-}
-@media(max-width:480px){
-  .hero{padding:7rem 1.25rem 4rem}
-  .sec,.reward,.final{padding:4rem 1.25rem}
-  .nav{padding:0 1.25rem}
-}
-</style>
+    .hero-sub {
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: var(--text2);
+      max-width: 480px;
+      margin: 0 auto 2rem
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      padding: .7rem 1.5rem;
+      font-family: var(--f);
+      font-size: .88rem;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 9px;
+      transition: all .2s ease;
+      border: none;
+      cursor: pointer
+    }
+
+    .btn svg {
+      width: 15px;
+      height: 15px
+    }
+
+    .btn-fill {
+      background: var(--navy);
+      color: var(--white)
+    }
+
+    .btn-fill:hover {
+      opacity: .88;
+      transform: translateY(-1px)
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text2);
+      border: 1px solid var(--border)
+    }
+
+    .btn-outline:hover {
+      border-color: var(--navy);
+      color: var(--navy)
+    }
+
+    /* SECTIONS */
+    .sec {
+      padding: 6rem 2.5rem
+    }
+
+    .sec-wrap {
+      max-width: 900px;
+      margin: 0 auto
+    }
+
+    .eyebrow {
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: .8rem
+    }
+
+    .sec-title {
+      font-size: clamp(1.6rem, 3vw, 2.3rem);
+      font-weight: 800;
+      line-height: 1.18;
+      letter-spacing: -.035em;
+      color: var(--navy);
+      margin-bottom: .75rem
+    }
+
+    .sec-sub {
+      font-size: .95rem;
+      line-height: 1.7;
+      color: var(--text2);
+      max-width: 520px;
+      margin-bottom: 2.5rem
+    }
+
+    /* QUALITY */
+    .quality {
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border)
+    }
+
+    .qual-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem
+    }
+
+    .qual-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.6rem;
+      transition: box-shadow .25s
+    }
+
+    .qual-card:hover {
+      box-shadow: 0 4px 20px rgba(12, 20, 33, .05)
+    }
+
+    .qual-card.yes {
+      background: var(--green-bg);
+      border-color: rgba(26, 138, 82, .12)
+    }
+
+    .qual-card.no {
+      background: var(--red-bg);
+      border-color: rgba(152, 72, 72, .1)
+    }
+
+    .qual-card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: .75rem;
+      letter-spacing: -.02em
+    }
+
+    .qual-card.yes h3 {
+      color: var(--green)
+    }
+
+    .qual-card.no h3 {
+      color: var(--red-muted)
+    }
+
+    .qual-card ul {
+      list-style: none
+    }
+
+    .qual-card li {
+      padding: .3rem 0 .3rem 1.4rem;
+      font-size: .85rem;
+      color: var(--text2);
+      line-height: 1.55;
+      position: relative
+    }
+
+    .qual-card.yes li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: var(--green);
+      font-weight: 700;
+      font-size: .8rem
+    }
+
+    .qual-card.no li::before {
+      content: '✕';
+      position: absolute;
+      left: 0;
+      color: var(--red-muted);
+      font-weight: 700;
+      font-size: .8rem
+    }
+
+    /* STEPS */
+    .steps {
+      background: var(--bg)
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem
+    }
+
+    .step-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.6rem;
+      text-align: center;
+      transition: box-shadow .25s
+    }
+
+    .step-card:hover {
+      box-shadow: 0 4px 20px rgba(12, 20, 33, .05)
+    }
+
+    .step-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--navy);
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .78rem;
+      font-weight: 700;
+      margin: 0 auto 1rem
+    }
+
+    .step-card h3 {
+      font-size: .95rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: .35rem;
+      letter-spacing: -.02em
+    }
+
+    .step-card p {
+      font-size: .85rem;
+      line-height: 1.6;
+      color: var(--text2)
+    }
+
+    /* REWARD */
+    .reward {
+      background: var(--bg2);
+      padding: 6rem 2.5rem;
+      text-align: center;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border)
+    }
+
+    .reward-inner {
+      max-width: 560px;
+      margin: 0 auto
+    }
+
+    .reward .sec-sub {
+      text-align: center;
+      margin: 0 auto 1.5rem
+    }
+
+    .reward-stats {
+      display: flex;
+      justify-content: center;
+      gap: 2.5rem;
+      margin: 2rem 0 2.5rem;
+      flex-wrap: wrap
+    }
+
+    .r-stat {
+      text-align: center
+    }
+
+    .r-stat .num {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--navy);
+      display: block;
+      letter-spacing: -.03em
+    }
+
+    .r-stat .lbl {
+      font-size: .68rem;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      font-weight: 600;
+      margin-top: .15rem
+    }
+
+    /* TRAVEL ARCHITECT */
+    .ta {
+      background: var(--white);
+      border-top: 1px solid var(--border)
+    }
+
+    .ta-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+      margin-top: .5rem
+    }
+
+    .ta-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--green))
+    }
+
+    .ta-card h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: .75rem;
+      letter-spacing: -.02em
+    }
+
+    .ta-card p {
+      font-size: .9rem;
+      line-height: 1.7;
+      color: var(--text2);
+      margin-bottom: .75rem
+    }
+
+    .ta-card p.bold {
+      color: var(--navy);
+      font-weight: 600
+    }
+
+    .ta-link {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      color: var(--accent);
+      font-weight: 600;
+      text-decoration: none;
+      font-size: .88rem;
+      transition: gap .2s
+    }
+
+    .ta-link:hover {
+      gap: .65rem
+    }
+
+    /* FINAL CTA */
+    .final {
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      padding: 5rem 2.5rem;
+      text-align: center
+    }
+
+    .final-inner {
+      max-width: 520px;
+      margin: 0 auto
+    }
+
+    .final .sec-title {
+      margin-bottom: .5rem
+    }
+
+    .final .sec-sub {
+      text-align: center;
+      margin: 0 auto 1.5rem
+    }
+
+    /* FOOTER */
+    footer {
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      padding: 1.75rem 2.5rem;
+      text-align: center
+    }
+
+    footer p {
+      font-size: .75rem;
+      color: var(--text3)
+    }
+
+    footer a {
+      color: var(--text3);
+      text-decoration: none;
+      transition: color .2s
+    }
+
+    footer a:hover {
+      color: var(--navy)
+    }
+
+    /* RESPONSIVE */
+    @media(max-width:768px) {
+
+      .qual-grid,
+      .steps-grid {
+        grid-template-columns: 1fr
+      }
+
+      .reward-stats {
+        gap: 1.5rem
+      }
+
+      .nav .nav-right span {
+        display: none
+      }
+    }
+
+    @media(max-width:480px) {
+      .hero {
+        padding: 7rem 1.25rem 4rem
+      }
+
+      .sec,
+      .reward,
+      .final {
+        padding: 4rem 1.25rem
+      }
+
+      .nav {
+        padding: 0 1.25rem
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<nav class="nav" id="nav">
-  <a href="https://airmango.com" class="nav-brand">Airmango</a>
-  <div class="nav-right">
-    <span><a href="https://airmango.com">← Back to Airmango</a></span>
-    <a href="https://form.airmango.com" class="nav-accent">Submit Content</a>
-  </div>
-</nav>
-
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-inner">
-    <div class="hero-chip">From the makers of the 5 Million Star Hotel</div>
-    <h1>Great Iceland content shouldn't just <span>collect dust</span></h1>
-    <p class="hero-sub">We're curating the most breathtaking Iceland travel content from real travelers. If our team selects your work, you earn a free night at The 5 Million Star Hotel.</p>
-    <a href="https://form.airmango.com" class="btn btn-fill">
-      Submit Your Best Content
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-    </a>
-  </div>
-</section>
-
-<!-- QUALITY -->
-<section class="sec quality">
-  <div class="sec-wrap">
-    <div class="eyebrow">What we're looking for</div>
-    <h2 class="sec-title">Not snapshots. The shot that made you stop breathing.</h2>
-    <p class="sec-sub">We're building a travel app where every photo tells a complete trip story. We need content that makes someone scrolling at midnight think: "I need to go there."</p>
-    <div class="qual-grid">
-      <div class="qual-card yes">
-        <h3>What gets accepted</h3>
-        <ul>
-          <li>Northern Lights dancing over Jökulsárlón</li>
-          <li>Golden hour at Vestrahorn's black sand beach</li>
-          <li>Drone footage over highland roads</li>
-          <li>A whale breach off Húsavík</li>
-          <li>Your Westfjords trip nobody else documented</li>
-          <li>Cinematic video edits of waterfalls and glaciers</li>
-        </ul>
-      </div>
-      <div class="qual-card no">
-        <h3>What doesn't make the cut</h3>
-        <ul>
-          <li>Blurry photos from a bus window</li>
-          <li>Unedited GoPro footage</li>
-          <li>10 photos of the same waterfall</li>
-          <li>Screenshots or heavily filtered snapshots</li>
-          <li>Not enough variety to tell a trip story</li>
-        </ul>
-      </div>
+  <nav class="nav" id="nav">
+    <a href="https://airmango.com" class="nav-brand">Airmango</a>
+    <div class="nav-right">
+      <span><a href="https://airmango.com">← Back to Airmango</a></span>
+      <a href="https://form.airmango.com" class="nav-accent">Submit Content</a>
     </div>
-  </div>
-</section>
+  </nav>
 
-<!-- STEPS -->
-<section class="sec steps">
-  <div class="sec-wrap">
-    <div class="eyebrow">How it works</div>
-    <h2 class="sec-title">Three steps. Five minutes. One free night.</h2>
-    <div class="steps-grid">
-      <div class="step-card">
-        <div class="step-num">1</div>
-        <h3>Create & Upload</h3>
-        <p>Sign up at form.airmango.com. Upload your best Iceland photos and videos. Organize them into a trip with locations and descriptions.</p>
-      </div>
-      <div class="step-card">
-        <div class="step-num">2</div>
-        <h3>We Review</h3>
-        <p>Our curation team reviews every submission. We're looking for the kind of content that makes people dream about Iceland.</p>
-      </div>
-      <div class="step-card">
-        <div class="step-num">3</div>
-        <h3>You're Rewarded</h3>
-        <p>Accepted creators receive a gift certificate for a one-night stay at the 5 Million Star Hotel — our transparent bubble hotel in South Iceland.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- REWARD -->
-<section class="reward">
-  <div class="reward-inner">
-    <div class="eyebrow">The reward</div>
-    <h2 class="sec-title">One night. Normally $299–$399. Yours free.</h2>
-    <p class="sec-sub">A transparent bubble where the only ceiling is the sky. Two locations in South Iceland. Featured in Condé Nast Traveler and dozens of publications worldwide.</p>
-    <div class="reward-stats">
-      <div class="r-stat"><span class="num">50,000+</span><span class="lbl">Guests hosted</span></div>
-      <div class="r-stat"><span class="num">Top 10%</span><span class="lbl">TripAdvisor</span></div>
-      <div class="r-stat"><span class="num">2</span><span class="lbl">Locations</span></div>
-    </div>
-    <a href="https://form.airmango.com" class="btn btn-fill">
-      Submit Your Content Now
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-    </a>
-  </div>
-</section>
-
-<!-- TRAVEL ARCHITECT -->
-<section class="sec ta">
-  <div class="sec-wrap">
-    <div class="eyebrow">For serious creators</div>
-    <h2 class="sec-title">This could be the start of something bigger.</h2>
-    <p class="sec-sub">We're hand-selecting our first Founding Travel Architects from this round of submissions. This status will never be available again after launch.</p>
-    <div class="ta-card">
-      <h3>Become a Founding Travel Architect</h3>
-      <p>We're building a platform where travel creators plan trips on a visual map, get instant access to pre-approved suppliers, and stop wasting weeks cold-emailing hotels that never reply. Founding Travel Architects get in first.</p>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin:1.25rem 0">
-        <div style="padding:.85rem;background:rgba(45,100,55,0.06);border-radius:8px">
-          <div style="font-weight:700;font-size:.85rem;color:#1a2e1c;margin-bottom:.2rem">Founding badge</div>
-          <div style="font-size:.78rem;color:#6b705c;line-height:1.5">A permanent status on your profile that can never be earned again after launch</div>
-        </div>
-        <div style="padding:.85rem;background:rgba(45,100,55,0.06);border-radius:8px">
-          <div style="font-weight:700;font-size:.85rem;color:#1a2e1c;margin-bottom:.2rem">First to new destinations</div>
-          <div style="font-size:.78rem;color:#6b705c;line-height:1.5">Priority access when we expand beyond Iceland</div>
-        </div>
-        <div style="padding:.85rem;background:rgba(45,100,55,0.06);border-radius:8px">
-          <div style="font-weight:700;font-size:.85rem;color:#1a2e1c;margin-bottom:.2rem">Hosted trip priority</div>
-          <div style="font-size:.78rem;color:#6b705c;line-height:1.5">First in line when suppliers offer complimentary stays and experiences</div>
-        </div>
-        <div style="padding:.85rem;background:rgba(45,100,55,0.06);border-radius:8px">
-          <div style="font-weight:700;font-size:.85rem;color:#1a2e1c;margin-bottom:.2rem">Limited window</div>
-          <div style="font-size:.78rem;color:#6b705c;line-height:1.5">We only accept submissions once a month — next round, the Founding status may be gone</div>
-        </div>
-      </div>
-      <div style="text-align:center;margin-top:1.25rem">
-        <p style="font-size:.9rem;color:#1a2e1c;font-weight:600;margin-bottom:.75rem">Submit your content now — every submission is reviewed for Founding Travel Architect status.</p>
-        <a href="https://form.airmango.com" style="display:inline-flex;align-items:center;gap:.4rem;padding:.7rem 1.5rem;background:#1a2e1c;color:#faf8f0;border-radius:9px;font-size:.88rem;font-weight:600;text-decoration:none">
-          Submit Your Content
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-        </a>
-        <div style="margin-top:.75rem">
-          <a href="https://demo.airmango.com" class="ta-link" target="_blank" style="justify-content:center">
-        See the Trip Builder Demo
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-chip">From the makers of the 5 Million Star Hotel</div>
+      <h1>Great Iceland content shouldn't just <span>collect dust</span></h1>
+      <p class="hero-sub">We're curating the most breathtaking Iceland travel content from real travelers. If our team
+        selects your work, you earn a free night at The 5 Million Star Hotel.</p>
+      <a href="https://form.airmango.com" class="btn btn-fill">
+        Submit Your Best Content
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M5 12h14" />
+          <path d="m12 5 7 7-7 7" />
+        </svg>
       </a>
+    </div>
+  </section>
+
+  <!-- QUALITY -->
+  <section class="sec quality">
+    <div class="sec-wrap">
+      <div class="eyebrow">What we're looking for</div>
+      <h2 class="sec-title">Not snapshots. The shot that made you stop breathing.</h2>
+      <p class="sec-sub">We're building a travel app where every photo tells a complete trip story. We need content that
+        makes someone scrolling at midnight think: "I need to go there."</p>
+      <div class="qual-grid">
+        <div class="qual-card yes">
+          <h3>What gets accepted</h3>
+          <ul>
+            <li>Northern Lights dancing over Jökulsárlón</li>
+            <li>Golden hour at Vestrahorn's black sand beach</li>
+            <li>Drone footage over highland roads</li>
+            <li>A whale breach off Húsavík</li>
+            <li>Your Westfjords trip nobody else documented</li>
+            <li>Cinematic video edits of waterfalls and glaciers</li>
+          </ul>
+        </div>
+        <div class="qual-card no">
+          <h3>What doesn't make the cut</h3>
+          <ul>
+            <li>Blurry photos from a bus window</li>
+            <li>Unedited GoPro footage</li>
+            <li>10 photos of the same waterfall</li>
+            <li>Screenshots or heavily filtered snapshots</li>
+            <li>Not enough variety to tell a trip story</li>
+          </ul>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- FINAL CTA -->
-<section class="final">
-  <div class="final-inner">
-    <h2 class="sec-title">Your Iceland trip was unforgettable. Don't let the content collect dust.</h2>
-    <p class="sec-sub">Only the best make it in.</p>
-    <a href="https://form.airmango.com" class="btn btn-fill">
-      Submit Your Best Content
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-    </a>
-  </div>
-</section>
+  <!-- STEPS -->
+  <section class="sec steps">
+    <div class="sec-wrap">
+      <div class="eyebrow">How it works</div>
+      <h2 class="sec-title">Three steps. Five minutes. One free night.</h2>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <h3>Create & Upload</h3>
+          <p>Sign up at form.airmango.com. Upload your best Iceland photos and videos. Organize them into a trip with
+            locations and descriptions.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <h3>We Review</h3>
+          <p>Our curation team reviews every submission. We're looking for the kind of content that makes people dream
+            about Iceland.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <h3>You're Rewarded</h3>
+          <p>Accepted creators receive a gift certificate for a one-night stay at the 5 Million Star Hotel — our
+            transparent bubble hotel in South Iceland.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<footer>
-  <p>&copy; 2026 Airmango Holding Inc. &middot; <a href="https://www.buubble.com">buubble.com</a> &middot; <a href="https://www.buubble.com/terms/">Terms</a> &middot; <a href="https://www.buubble.com/privacy-policy/">Privacy</a></p>
-</footer>
+  <!-- REWARD -->
+  <section class="reward">
+    <div class="reward-inner">
+      <div class="eyebrow">The reward</div>
+      <h2 class="sec-title">One night. Normally $299–$399. Yours free.</h2>
+      <p class="sec-sub">A transparent bubble where the only ceiling is the sky. Two locations in South Iceland.
+        Featured in Condé Nast Traveler and dozens of publications worldwide.</p>
+      <div class="reward-stats">
+        <div class="r-stat"><span class="num">50,000+</span><span class="lbl">Guests hosted</span></div>
+        <div class="r-stat"><span class="num">Top 10%</span><span class="lbl">TripAdvisor</span></div>
+        <div class="r-stat"><span class="num">2</span><span class="lbl">Locations</span></div>
+      </div>
+      <a href="https://form.airmango.com" class="btn btn-fill">
+        Submit Your Content Now
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M5 12h14" />
+          <path d="m12 5 7 7-7 7" />
+        </svg>
+      </a>
+    </div>
+  </section>
 
-<script>
-const n=document.getElementById('nav');
-window.addEventListener('scroll',()=>n.classList.toggle('shadow',scrollY>30));
-const io=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting){x.target.style.opacity='1';x.target.style.transform='translateY(0)'}})},{threshold:.08,rootMargin:'0px 0px -30px 0px'});
-document.querySelectorAll('.qual-card,.step-card,.ta-card,.r-stat').forEach((el,i)=>{el.style.opacity='0';el.style.transform='translateY(16px)';el.style.transition=`opacity .5s ease ${i*.06}s, transform .5s ease ${i*.06}s`;io.observe(el)});
-</script>
+  <!-- TRAVEL ARCHITECT -->
+  <section class="sec ta">
+    <div class="sec-wrap">
+      <div class="eyebrow">For serious creators</div>
+      <h2 class="sec-title">This could be the start of something bigger.</h2>
+      <p class="sec-sub">We're hand-selecting our first Founding Travel Architects from this round of submissions. This
+        status will never be available again after launch.</p>
+      <div class="ta-card">
+        <h3>Become a Founding Travel Architect</h3>
+        <p>We're building a platform where travel creators plan trips on a visual map, get instant access to
+          pre-approved suppliers, and stop wasting weeks cold-emailing hotels that never reply. Founding Travel
+          Architects get in first.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin:1.25rem 0">
+          <div style="padding:.85rem;background:rgba(45,100,55,0.06);border-radius:8px">
+            <div style="font-weight:700;font-size:.85rem;color:#1a2e1c;margin-bottom:.2rem">Founding badge</div>
+            <div style="font-size:.78rem;color:#6b705c;line-height:1.5">A permanent status on your profile that can
+              never be earned again after launch</div>
+          </div>
+          <div style="padding:.85rem;background:rgba(45,100,55,0.06);border-radius:8px">
+            <div style="font-weight:700;font-size:.85rem;color:#1a2e1c;margin-bottom:.2rem">First to new destinations
+            </div>
+            <div style="font-size:.78rem;color:#6b705c;line-height:1.5">Priority access when we expand beyond Iceland
+            </div>
+          </div>
+          <div style="padding:.85rem;background:rgba(45,100,55,0.06);border-radius:8px">
+            <div style="font-weight:700;font-size:.85rem;color:#1a2e1c;margin-bottom:.2rem">Hosted trip priority</div>
+            <div style="font-size:.78rem;color:#6b705c;line-height:1.5">First in line when suppliers offer complimentary
+              stays and experiences</div>
+          </div>
+          <div style="padding:.85rem;background:rgba(45,100,55,0.06);border-radius:8px">
+            <div style="font-weight:700;font-size:.85rem;color:#1a2e1c;margin-bottom:.2rem">Limited window</div>
+            <div style="font-size:.78rem;color:#6b705c;line-height:1.5">We only accept submissions once a month — next
+              round, the Founding status may be gone</div>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:1.25rem">
+          <p style="font-size:.9rem;color:#1a2e1c;font-weight:600;margin-bottom:.75rem">Submit your content now — every
+            submission is reviewed for Founding Travel Architect status.</p>
+          <a href="https://form.airmango.com"
+            style="display:inline-flex;align-items:center;gap:.4rem;padding:.7rem 1.5rem;background:#1a2e1c;color:#faf8f0;border-radius:9px;font-size:.88rem;font-weight:600;text-decoration:none">
+            Submit Your Content
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14" />
+              <path d="m12 5 7 7-7 7" />
+            </svg>
+          </a>
+          <div style="margin-top:.75rem">
+            <a href="https://demo.airmango.com" class="ta-link" target="_blank" style="justify-content:center">
+              See the Trip Builder Demo
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="final">
+    <div class="final-inner">
+      <h2 class="sec-title">Your Iceland trip was unforgettable. Don't let the content collect dust.</h2>
+      <p class="sec-sub">Only the best make it in.</p>
+      <a href="https://form.airmango.com" class="btn btn-fill">
+        Submit Your Best Content
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M5 12h14" />
+          <path d="m12 5 7 7-7 7" />
+        </svg>
+      </a>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2026 Airmango Holding Inc. &middot; <a href="https://www.buubble.com">buubble.com</a> &middot; <a
+        href="https://www.buubble.com/terms/">Terms</a> &middot; <a
+        href="https://www.buubble.com/privacy-policy/">Privacy</a></p>
+  </footer>
+
+  <script>
+    const n = document.getElementById('nav');
+    window.addEventListener('scroll', () => n.classList.toggle('shadow', scrollY > 30));
+    const io = new IntersectionObserver(e => { e.forEach(x => { if (x.isIntersecting) { x.target.style.opacity = '1'; x.target.style.transform = 'translateY(0)' } }) }, { threshold: .08, rootMargin: '0px 0px -30px 0px' });
+    document.querySelectorAll('.qual-card,.step-card,.ta-card,.r-stat').forEach((el, i) => { el.style.opacity = '0'; el.style.transform = 'translateY(16px)'; el.style.transition = `opacity .5s ease ${i * .06}s, transform .5s ease ${i * .06}s`; io.observe(el) });
+
+    // Tracking Passthrough: Capture sub_id/ref from URL and append to form links
+    (function () {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const ref = urlParams.get('ref') || urlParams.get('sub_id');
+        if (ref) {
+          document.querySelectorAll('a[href^="https://form.airmango.com"]').forEach(link => {
+            const separator = link.href.includes('?') ? '&' : '?';
+            link.href = link.href + separator + 'ref=' + encodeURIComponent(ref);
+          });
+        }
+      } catch (e) { console.warn('Tracking setup failed', e); }
+    })();
+  </script>
 </body>
+
 </html>
