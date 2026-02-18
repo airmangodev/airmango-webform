@@ -77,6 +77,11 @@ window.auth = {
 };
 
 // ===== Ref Token Capture & Webhook Helpers =====
+// NOTE: URLs are hardcoded here because auth.js loads BEFORE app.js (where CONFIG is defined)
+const TRACKING_WEBHOOKS = {
+    linkClicked: 'https://n8n.restaurantreykjavik.com/webhook/link-clicked',
+    signup: 'https://n8n.restaurantreykjavik.com/webhook/user-signed-up'
+};
 
 /**
  * Captures ?ref=TOKEN from the URL, stores it in localStorage,
@@ -93,7 +98,7 @@ function captureRefToken() {
             console.log('[Tracking] Ref token captured:', refToken);
 
             // Fire link-clicked webhook (non-blocking)
-            fetch(CONFIG.linkClickWebhook, {
+            fetch(TRACKING_WEBHOOKS.linkClicked, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -125,7 +130,7 @@ function fireSignupWebhook(name, email) {
     try {
         const refToken = localStorage.getItem('airmango_ref_token') || null;
 
-        fetch(CONFIG.signupWebhook, {
+        fetch(TRACKING_WEBHOOKS.signup, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
