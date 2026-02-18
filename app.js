@@ -1342,20 +1342,28 @@ async function handleSubmit() {
         // Mark as submitted to bypass unload warning
         state.isSubmitted = true;
 
-        // Fire trip-submitted webhook to n8n for lead tracking (sendBeacon avoids CORS)
-        const trackingPayload = JSON.stringify({
-            event: 'trip_submitted',
-            ref_token: localStorage.getItem('airmango_ref_token') || null,
-            trip_title: state.trip.title,
-            trip_location: state.trip.location,
-            user_email: authState.user?.email || null,
-            user_name: authState.user?.user_metadata?.full_name || 'Anonymous',
-            total_days: state.days.length,
-            total_media: countTotalMedia(),
-            timestamp: new Date().toISOString()
-        });
-        const trackingBlob = new Blob([trackingPayload], { type: 'text/plain' });
-        navigator.sendBeacon(CONFIG.tripSubmittedWebhook, trackingBlob);
+        // IMPORTANT: Disable auto-save so it doesn't overwrite the saved trip with empty data during redirect
+        if (authState.saveInterval) clearInterval(authState.saveInterval);
+        document.removeEventListener('input', debouncedSave);
+        document.removeEventListener('change', debouncedSave);
+
+        // Update trip status to 'submitted' in Supabase (so it stays visible in dashboard)
+        if (window.supabaseClient && authState.currentTripId) {
+            window.supabaseClient
+                .from('trips')
+                .update({ status: 'submitted', updated_at: new Date().toISOString() })
+                .eq('id', authState.currentTripId)
+                .then(() => console.log('[Submit] Trip marked as submitted'))
+                .catch(err => console.warn('[Submit] Failed to update trip status:', err));
+        }
+
+        // Clear lastOpenTripId so user sees dashboard when they come back
+        localStorage.removeItem('lastOpenTripId');
+
+        // Fire trip-submitted tracking pixel (simple GET, no CORS issues)
+        const refToken = localStorage.getItem('airmango_ref_token') || '';
+        const trackImg = new Image();
+        trackImg.src = `${CONFIG.tripSubmittedWebhook}?event=trip_submitted&ref_token=${encodeURIComponent(refToken)}&trip_title=${encodeURIComponent(state.trip.title || '')}&user_email=${encodeURIComponent(authState.user?.email || '')}&user_name=${encodeURIComponent(authState.user?.user_metadata?.full_name || '')}&total_days=${state.days.length}&timestamp=${encodeURIComponent(new Date().toISOString())}`;
 
         // Redirect to thank-you page (trailing slash prevents Traefik/Coolify internal redirect)
         window.location.href = 'https://form.airmango.com/thank-you/';

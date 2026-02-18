@@ -77,15 +77,30 @@ window.auth = {
 };
 
 // ===== Ref Token Capture & Webhook Helpers =====
-// NOTE: URLs are hardcoded here because auth.js loads BEFORE app.js (where CONFIG is defined)
+// Using Image pixel GET requests — most reliable tracking method, zero CORS issues.
 const TRACKING_WEBHOOKS = {
     linkClicked: 'https://n8n.restaurantreykjavik.com/webhook/link-clicked',
     signup: 'https://n8n.restaurantreykjavik.com/webhook/user-signed-up'
 };
 
+/** Fire a tracking pixel — works like Google Analytics, no CORS issues ever. */
+function fireTrackingPixel(url, params) {
+    try {
+        const queryString = Object.entries(params)
+            .filter(([, v]) => v != null)
+            .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+            .join('&');
+        const img = new Image();
+        img.src = `${url}?${queryString}`;
+        console.log('[Tracking] Pixel fired:', img.src);
+    } catch (err) {
+        console.warn('[Tracking] Pixel failed:', err);
+    }
+}
+
 /**
  * Captures ?ref=TOKEN from the URL, stores it in localStorage,
- * and fires the "link clicked" webhook to n8n.
+ * and fires the "link clicked" tracking pixel.
  */
 function captureRefToken() {
     try {
@@ -93,21 +108,15 @@ function captureRefToken() {
         const refToken = urlParams.get('ref');
 
         if (refToken) {
-            // Store in localStorage so it persists through signup/login flow
             localStorage.setItem('airmango_ref_token', refToken);
             console.log('[Tracking] Ref token captured:', refToken);
 
-            // Fire link-clicked webhook using sendBeacon (avoids CORS preflight)
-            const payload = JSON.stringify({
+            fireTrackingPixel(TRACKING_WEBHOOKS.linkClicked, {
                 event: 'link_clicked',
                 ref_token: refToken,
                 timestamp: new Date().toISOString(),
-                user_agent: navigator.userAgent,
                 page_url: window.location.href
             });
-            const blob = new Blob([payload], { type: 'text/plain' });
-            const sent = navigator.sendBeacon(TRACKING_WEBHOOKS.linkClicked, blob);
-            console.log('[Tracking] Link-click beacon sent:', sent);
 
             // Clean the URL to remove ?ref= (cosmetic)
             const cleanUrl = window.location.origin + window.location.pathname;
@@ -119,25 +128,17 @@ function captureRefToken() {
 }
 
 /**
- * Fires the "user signed up" webhook to n8n with the stored ref token.
+ * Fires the "user signed up" tracking pixel with the stored ref token.
  */
 function fireSignupWebhook(name, email) {
-    try {
-        const refToken = localStorage.getItem('airmango_ref_token') || null;
-
-        const payload = JSON.stringify({
-            event: 'user_signed_up',
-            ref_token: refToken,
-            signup_name: name,
-            signup_email: email,
-            timestamp: new Date().toISOString()
-        });
-        const blob = new Blob([payload], { type: 'text/plain' });
-        const sent = navigator.sendBeacon(TRACKING_WEBHOOKS.signup, blob);
-        console.log('[Tracking] Signup beacon sent:', sent);
-    } catch (err) {
-        console.warn('[Tracking] Failed to fire signup webhook:', err);
-    }
+    const refToken = localStorage.getItem('airmango_ref_token') || null;
+    fireTrackingPixel(TRACKING_WEBHOOKS.signup, {
+        event: 'user_signed_up',
+        ref_token: refToken,
+        signup_name: name,
+        signup_email: email,
+        timestamp: new Date().toISOString()
+    });
 }
 
 // ===== Initialize =====
