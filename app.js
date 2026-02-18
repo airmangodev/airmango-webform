@@ -1342,26 +1342,20 @@ async function handleSubmit() {
         // Mark as submitted to bypass unload warning
         state.isSubmitted = true;
 
-        // Fire trip-submitted webhook to n8n for lead tracking (non-blocking, separate from main submission)
-        fetch(CONFIG.tripSubmittedWebhook, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                event: 'trip_submitted',
-                ref_token: localStorage.getItem('airmango_ref_token') || null,
-                trip_title: state.trip.title,
-                trip_location: state.trip.location,
-                user_email: authState.user?.email || null,
-                user_name: authState.user?.user_metadata?.full_name || 'Anonymous',
-                total_days: state.days.length,
-                total_media: countTotalMedia(),
-                timestamp: new Date().toISOString()
-            })
-        }).then(() => {
-            console.log('[Tracking] Trip-submitted webhook sent');
-        }).catch(err => {
-            console.warn('[Tracking] Trip-submitted webhook failed:', err);
+        // Fire trip-submitted webhook to n8n for lead tracking (sendBeacon avoids CORS)
+        const trackingPayload = JSON.stringify({
+            event: 'trip_submitted',
+            ref_token: localStorage.getItem('airmango_ref_token') || null,
+            trip_title: state.trip.title,
+            trip_location: state.trip.location,
+            user_email: authState.user?.email || null,
+            user_name: authState.user?.user_metadata?.full_name || 'Anonymous',
+            total_days: state.days.length,
+            total_media: countTotalMedia(),
+            timestamp: new Date().toISOString()
         });
+        const trackingBlob = new Blob([trackingPayload], { type: 'application/json' });
+        navigator.sendBeacon(CONFIG.tripSubmittedWebhook, trackingBlob);
 
         // Redirect to thank-you page (trailing slash prevents Traefik/Coolify internal redirect)
         window.location.href = 'https://form.airmango.com/thank-you/';

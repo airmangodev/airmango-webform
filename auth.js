@@ -97,24 +97,19 @@ function captureRefToken() {
             localStorage.setItem('airmango_ref_token', refToken);
             console.log('[Tracking] Ref token captured:', refToken);
 
-            // Fire link-clicked webhook (non-blocking)
-            fetch(TRACKING_WEBHOOKS.linkClicked, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    event: 'link_clicked',
-                    ref_token: refToken,
-                    timestamp: new Date().toISOString(),
-                    user_agent: navigator.userAgent,
-                    page_url: window.location.href
-                })
-            }).then(() => {
-                console.log('[Tracking] Link-click webhook sent');
-            }).catch(err => {
-                console.warn('[Tracking] Link-click webhook failed:', err);
+            // Fire link-clicked webhook using sendBeacon (avoids CORS preflight)
+            const payload = JSON.stringify({
+                event: 'link_clicked',
+                ref_token: refToken,
+                timestamp: new Date().toISOString(),
+                user_agent: navigator.userAgent,
+                page_url: window.location.href
             });
+            const blob = new Blob([payload], { type: 'application/json' });
+            const sent = navigator.sendBeacon(TRACKING_WEBHOOKS.linkClicked, blob);
+            console.log('[Tracking] Link-click beacon sent:', sent);
 
-            // Clean the URL to remove ?ref= (cosmetic, optional)
+            // Clean the URL to remove ?ref= (cosmetic)
             const cleanUrl = window.location.origin + window.location.pathname;
             window.history.replaceState({}, document.title, cleanUrl);
         }
@@ -130,21 +125,16 @@ function fireSignupWebhook(name, email) {
     try {
         const refToken = localStorage.getItem('airmango_ref_token') || null;
 
-        fetch(TRACKING_WEBHOOKS.signup, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                event: 'user_signed_up',
-                ref_token: refToken,
-                signup_name: name,
-                signup_email: email,
-                timestamp: new Date().toISOString()
-            })
-        }).then(() => {
-            console.log('[Tracking] Signup webhook sent');
-        }).catch(err => {
-            console.warn('[Tracking] Signup webhook failed:', err);
+        const payload = JSON.stringify({
+            event: 'user_signed_up',
+            ref_token: refToken,
+            signup_name: name,
+            signup_email: email,
+            timestamp: new Date().toISOString()
         });
+        const blob = new Blob([payload], { type: 'application/json' });
+        const sent = navigator.sendBeacon(TRACKING_WEBHOOKS.signup, blob);
+        console.log('[Tracking] Signup beacon sent:', sent);
     } catch (err) {
         console.warn('[Tracking] Failed to fire signup webhook:', err);
     }
