@@ -76,11 +76,83 @@ window.auth = {
     saveCurrentTrip: () => saveFormProgress(true) // Force save
 };
 
+// ===== Ref Token Capture & Webhook Helpers =====
+
+/**
+ * Captures ?ref=TOKEN from the URL, stores it in localStorage,
+ * and fires the "link clicked" webhook to n8n.
+ */
+function captureRefToken() {
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const refToken = urlParams.get('ref');
+
+        if (refToken) {
+            // Store in localStorage so it persists through signup/login flow
+            localStorage.setItem('airmango_ref_token', refToken);
+            console.log('[Tracking] Ref token captured:', refToken);
+
+            // Fire link-clicked webhook (non-blocking)
+            fetch(CONFIG.linkClickWebhook, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    event: 'link_clicked',
+                    ref_token: refToken,
+                    timestamp: new Date().toISOString(),
+                    user_agent: navigator.userAgent,
+                    page_url: window.location.href
+                })
+            }).then(() => {
+                console.log('[Tracking] Link-click webhook sent');
+            }).catch(err => {
+                console.warn('[Tracking] Link-click webhook failed:', err);
+            });
+
+            // Clean the URL to remove ?ref= (cosmetic, optional)
+            const cleanUrl = window.location.origin + window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+        }
+    } catch (err) {
+        console.warn('[Tracking] Failed to capture ref token:', err);
+    }
+}
+
+/**
+ * Fires the "user signed up" webhook to n8n with the stored ref token.
+ */
+function fireSignupWebhook(name, email) {
+    try {
+        const refToken = localStorage.getItem('airmango_ref_token') || null;
+
+        fetch(CONFIG.signupWebhook, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                event: 'user_signed_up',
+                ref_token: refToken,
+                signup_name: name,
+                signup_email: email,
+                timestamp: new Date().toISOString()
+            })
+        }).then(() => {
+            console.log('[Tracking] Signup webhook sent');
+        }).catch(err => {
+            console.warn('[Tracking] Signup webhook failed:', err);
+        });
+    } catch (err) {
+        console.warn('[Tracking] Failed to fire signup webhook:', err);
+    }
+}
+
 // ===== Initialize =====
 async function initAuth() {
     cacheAuthElements();
     setupAuthListeners();
     fetchIpAddress();
+
+    // Capture ?ref= token from URL and fire link-clicked webhook
+    captureRefToken();
 
     if (!window.supabaseClient) {
         console.error('[Auth] Supabase client not initialized!');
@@ -144,6 +216,10 @@ async function handleSignup() {
             options: { data: { full_name: name }, emailRedirectTo: window.location.href }
         });
         if (error) throw error;
+
+        // Fire signup webhook to n8n (non-blocking)
+        fireSignupWebhook(name, email);
+
         if (data.user && !data.session) showVerifyNotice(email);
     } catch (err) {
         showAuthError('signup', err.message);

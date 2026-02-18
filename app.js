@@ -44,6 +44,9 @@
 const CONFIG = {
     mediaUploadWebhook: 'https://n8n.restaurantreykjavik.com/webhook/general-media-upload',
     finalSubmissionWebhook: 'https://n8n.restaurantreykjavik.com/webhook/new-form-trip-submission',
+    linkClickWebhook: 'https://n8n.restaurantreykjavik.com/webhook/link-clicked',
+    signupWebhook: 'https://n8n.restaurantreykjavik.com/webhook/user-signed-up',
+    tripSubmittedWebhook: 'https://n8n.restaurantreykjavik.com/webhook/trip-submitted',
     maxVideoSize: 1024 * 1024 * 1024,
     maxImageSize: 50 * 1024 * 1024,
     maxConcurrentUploads: 2,
@@ -1339,6 +1342,27 @@ async function handleSubmit() {
         // Mark as submitted to bypass unload warning
         state.isSubmitted = true;
 
+        // Fire trip-submitted webhook to n8n for lead tracking (non-blocking, separate from main submission)
+        fetch(CONFIG.tripSubmittedWebhook, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                event: 'trip_submitted',
+                ref_token: localStorage.getItem('airmango_ref_token') || null,
+                trip_title: state.trip.title,
+                trip_location: state.trip.location,
+                user_email: authState.user?.email || null,
+                user_name: authState.user?.user_metadata?.full_name || 'Anonymous',
+                total_days: state.days.length,
+                total_media: countTotalMedia(),
+                timestamp: new Date().toISOString()
+            })
+        }).then(() => {
+            console.log('[Tracking] Trip-submitted webhook sent');
+        }).catch(err => {
+            console.warn('[Tracking] Trip-submitted webhook failed:', err);
+        });
+
         // Redirect to thank-you page (trailing slash prevents Traefik/Coolify internal redirect)
         window.location.href = 'https://form.airmango.com/thank-you/';
 
@@ -1370,6 +1394,7 @@ function countTotalMedia() {
 
 function buildSubmissionPayload() {
     return {
+        ref_token: localStorage.getItem('airmango_ref_token') || null,
         user: {
             name: authState.user.user_metadata?.full_name || 'Anonymous',
             email: authState.user.email,
