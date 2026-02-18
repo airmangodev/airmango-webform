@@ -1342,48 +1342,44 @@ async function handleSubmit() {
         // Mark as submitted to bypass unload warning
         state.isSubmitted = true;
 
-        // IMPORTANT: Disable auto-save so it doesn't overwrite the saved trip with empty data during redirect
+        // STOP Auto-Save Loop
         if (authState.saveInterval) clearInterval(authState.saveInterval);
         document.removeEventListener('input', debouncedSave);
         document.removeEventListener('change', debouncedSave);
 
-        // Update trip status to 'submitted' in Supabase (so it stays visible in dashboard)
+        // Update trip status to 'submitted' in Supabase (AWAIT to ensure completion)
         if (window.supabaseClient && authState.currentTripId) {
-            window.supabaseClient
-                .from('trips')
-                .update({ status: 'submitted', updated_at: new Date().toISOString() })
-                .eq('id', authState.currentTripId)
-                .then(() => console.log('[Submit] Trip marked as submitted'))
-                .catch(err => console.warn('[Submit] Failed to update trip status:', err));
+            try {
+                await window.supabaseClient
+                    .from('trips')
+                    .update({ status: 'submitted', updated_at: new Date().toISOString() })
+                    .eq('id', authState.currentTripId);
+                console.log('[Submit] Trip marked as submitted');
+            } catch (err) {
+                console.warn('[Submit] Failed to update trip status:', err);
+                // Proceed anyway, don't block
+            }
         }
 
         // Clear lastOpenTripId so user sees dashboard when they come back
         localStorage.removeItem('lastOpenTripId');
 
-        // Fire trip-submitted webhook (POST, no-cors, keepalive)
-        fetch(CONFIG.tripSubmittedWebhook, {
-            method: 'POST',
-            mode: 'no-cors',
-            keepalive: true,
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({
-                event: 'trip_submitted',
-                ref_token: localStorage.getItem('airmango_ref_token') || null,
+        // Track Trip Submission Directly to Supabase (Reliable)
+        if (typeof window.trackLeadEvent === 'function') {
+            await window.trackLeadEvent('trip_submitted', {
                 trip_title: state.trip.title,
                 trip_location: state.trip.location,
-                user_email: authState.user?.email || null,
-                user_name: authState.user?.user_metadata?.full_name || 'Anonymous',
                 total_days: state.days.length,
                 total_media: countTotalMedia(),
-                timestamp: new Date().toISOString()
-            })
-        });
+                ref_token: localStorage.getItem('airmango_ref_token') || null
+            });
+        }
 
-        // Redirect to thank-you page (trailing slash prevents Traefik/Coolify internal redirect)
+        // Redirect to thank-you page
         window.location.href = 'https://form.airmango.com/thank-you/';
 
-        // Track successful submission
-        trackEvent('form_submit_success', state.trip.title, `${state.days.length} days`);
+        // Use timeout to allow tracking (just in case await failed silently or resolved early)
+        // Note: location.href usually blocks, but await above provides the best guarantee.
     } catch (error) {
         console.error('Submit error:', error);
         showToast('Submission failed. Please try again.', 'error');

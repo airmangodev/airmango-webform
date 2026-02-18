@@ -76,51 +76,72 @@ window.auth = {
     saveCurrentTrip: () => saveFormProgress(true) // Force save
 };
 
-// ===== Ref Token Capture & Webhook Helpers =====
-// Using fetch POST with mode:'no-cors' — sends POST without CORS preflight.
-const TRACKING_WEBHOOKS = {
-    linkClicked: 'https://n8n.restaurantreykjavik.com/webhook/link-clicked',
-    signup: 'https://n8n.restaurantreykjavik.com/webhook/user-signed-up'
-};
-
-/** Fire a tracking POST — no-cors mode bypasses CORS, text/plain avoids preflight. */
-function fireTrackingPost(url, data) {
-    try {
-        fetch(url, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify(data)
-        });
-        console.log('[Tracking] POST fired:', url);
-    } catch (err) {
-        console.warn('[Tracking] POST failed:', err);
-    }
-}
+// ===== Direct Lead Tracking (Supabase) =====
+// Replaces n8n webhooks for reliability.
 
 /**
- * Captures ?ref=TOKEN from the URL, stores it in localStorage,
- * and fires the "link clicked" webhook.
+ * Tracks a lead event directly to Supabase.
+ * @param {string} eventType - 'link_clicked', 'user_signed_up', 'trip_submitted'
+ * @param {object} payload - Additional data to store
+ */
+window.trackLeadEvent = async function (eventType, payload = {}) {
+    const refToken = localStorage.getItem('airmango_ref_token') || null;
+
+    // Construct the data object
+    const eventData = {
+        ref_token: refToken || 'no_token', // Ensure not null constraint
+        event_type: eventType,
+        user_email: payload.email || authState.user?.email || null,
+        payload: {
+            ...payload,
+            userAgent: navigator.userAgent,
+            timestamp: new Date().toISOString(),
+            url: window.location.href
+        }
+    };
+
+    console.log(`[LeadTracker] Tracking ${eventType}:`, eventData);
+
+    try {
+        if (!window.supabaseClient) {
+            console.warn('[LeadTracker] Supabase client not ready, queuing event...');
+            // Simple retry mechanism could be added here, or just fail safely
+            return;
+        }
+
+        const { error } = await window.supabaseClient
+            .from('lead_tracker_new')
+            .insert(eventData);
+
+        if (error) {
+            console.error('[LeadTracker] Insert failed:', error);
+            // Fallback? LocalStorage? For now, just log.
+        } else {
+            console.log(`[LeadTracker] ${eventType} saved successfully.`);
+        }
+    } catch (err) {
+        console.error('[LeadTracker] Exception:', err);
+    }
+};
+
+/**
+ * Captures ?ref=TOKEN from the URL, stores it, and tracks the click.
  */
 function captureRefToken() {
     try {
         const urlParams = new URLSearchParams(window.location.search);
-        const refToken = urlParams.get('ref');
+        const refToken = urlParams.get('ref') || urlParams.get('sub_id'); // Support both
 
         if (refToken) {
             localStorage.setItem('airmango_ref_token', refToken);
             console.log('[Tracking] Ref token captured:', refToken);
 
-            fireTrackingPost(TRACKING_WEBHOOKS.linkClicked, {
-                event: 'link_clicked',
-                ref_token: refToken,
-                timestamp: new Date().toISOString(),
-                page_url: window.location.href
-            });
-
-            // Clean the URL to remove ?ref= (cosmetic)
+            // Clean the URL (cosmetic)
             const cleanUrl = window.location.origin + window.location.pathname;
             window.history.replaceState({}, document.title, cleanUrl);
+
+            // Track the click immediately
+            window.trackLeadEvent('link_clicked', { ref_token: refToken });
         }
     } catch (err) {
         console.warn('[Tracking] Failed to capture ref token:', err);
@@ -128,16 +149,12 @@ function captureRefToken() {
 }
 
 /**
- * Fires the "user signed up" webhook with the stored ref token.
+ * Tracks signup event.
  */
 function fireSignupWebhook(name, email) {
-    const refToken = localStorage.getItem('airmango_ref_token') || null;
-    fireTrackingPost(TRACKING_WEBHOOKS.signup, {
-        event: 'user_signed_up',
-        ref_token: refToken,
+    window.trackLeadEvent('user_signed_up', {
         signup_name: name,
-        signup_email: email,
-        timestamp: new Date().toISOString()
+        signup_email: email
     });
 }
 
