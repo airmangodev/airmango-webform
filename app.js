@@ -1360,10 +1360,23 @@ async function handleSubmit() {
         // Clear lastOpenTripId so user sees dashboard when they come back
         localStorage.removeItem('lastOpenTripId');
 
-        // Fire trip-submitted tracking pixel (simple GET, no CORS issues)
-        const refToken = localStorage.getItem('airmango_ref_token') || '';
-        const trackImg = new Image();
-        trackImg.src = `${CONFIG.tripSubmittedWebhook}?event=trip_submitted&ref_token=${encodeURIComponent(refToken)}&trip_title=${encodeURIComponent(state.trip.title || '')}&user_email=${encodeURIComponent(authState.user?.email || '')}&user_name=${encodeURIComponent(authState.user?.user_metadata?.full_name || '')}&total_days=${state.days.length}&timestamp=${encodeURIComponent(new Date().toISOString())}`;
+        // Fire trip-submitted webhook (POST with no-cors, avoids CORS issues)
+        fetch(CONFIG.tripSubmittedWebhook, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({
+                event: 'trip_submitted',
+                ref_token: localStorage.getItem('airmango_ref_token') || null,
+                trip_title: state.trip.title,
+                trip_location: state.trip.location,
+                user_email: authState.user?.email || null,
+                user_name: authState.user?.user_metadata?.full_name || 'Anonymous',
+                total_days: state.days.length,
+                total_media: countTotalMedia(),
+                timestamp: new Date().toISOString()
+            })
+        });
 
         // Redirect to thank-you page (trailing slash prevents Traefik/Coolify internal redirect)
         window.location.href = 'https://form.airmango.com/thank-you/';

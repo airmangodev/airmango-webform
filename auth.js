@@ -77,30 +77,30 @@ window.auth = {
 };
 
 // ===== Ref Token Capture & Webhook Helpers =====
-// Using Image pixel GET requests — most reliable tracking method, zero CORS issues.
+// Using fetch POST with mode:'no-cors' — sends POST without CORS preflight.
 const TRACKING_WEBHOOKS = {
     linkClicked: 'https://n8n.restaurantreykjavik.com/webhook/link-clicked',
     signup: 'https://n8n.restaurantreykjavik.com/webhook/user-signed-up'
 };
 
-/** Fire a tracking pixel — works like Google Analytics, no CORS issues ever. */
-function fireTrackingPixel(url, params) {
+/** Fire a tracking POST — no-cors mode bypasses CORS, text/plain avoids preflight. */
+function fireTrackingPost(url, data) {
     try {
-        const queryString = Object.entries(params)
-            .filter(([, v]) => v != null)
-            .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
-            .join('&');
-        const img = new Image();
-        img.src = `${url}?${queryString}`;
-        console.log('[Tracking] Pixel fired:', img.src);
+        fetch(url, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify(data)
+        });
+        console.log('[Tracking] POST fired:', url);
     } catch (err) {
-        console.warn('[Tracking] Pixel failed:', err);
+        console.warn('[Tracking] POST failed:', err);
     }
 }
 
 /**
  * Captures ?ref=TOKEN from the URL, stores it in localStorage,
- * and fires the "link clicked" tracking pixel.
+ * and fires the "link clicked" webhook.
  */
 function captureRefToken() {
     try {
@@ -111,7 +111,7 @@ function captureRefToken() {
             localStorage.setItem('airmango_ref_token', refToken);
             console.log('[Tracking] Ref token captured:', refToken);
 
-            fireTrackingPixel(TRACKING_WEBHOOKS.linkClicked, {
+            fireTrackingPost(TRACKING_WEBHOOKS.linkClicked, {
                 event: 'link_clicked',
                 ref_token: refToken,
                 timestamp: new Date().toISOString(),
@@ -128,11 +128,11 @@ function captureRefToken() {
 }
 
 /**
- * Fires the "user signed up" tracking pixel with the stored ref token.
+ * Fires the "user signed up" webhook with the stored ref token.
  */
 function fireSignupWebhook(name, email) {
     const refToken = localStorage.getItem('airmango_ref_token') || null;
-    fireTrackingPixel(TRACKING_WEBHOOKS.signup, {
+    fireTrackingPost(TRACKING_WEBHOOKS.signup, {
         event: 'user_signed_up',
         ref_token: refToken,
         signup_name: name,
