@@ -105,7 +105,7 @@ function captureRefToken() {
                 user_agent: navigator.userAgent,
                 page_url: window.location.href
             });
-            const blob = new Blob([payload], { type: 'application/json' });
+            const blob = new Blob([payload], { type: 'text/plain' });
             const sent = navigator.sendBeacon(TRACKING_WEBHOOKS.linkClicked, blob);
             console.log('[Tracking] Link-click beacon sent:', sent);
 
@@ -132,7 +132,7 @@ function fireSignupWebhook(name, email) {
             signup_email: email,
             timestamp: new Date().toISOString()
         });
-        const blob = new Blob([payload], { type: 'application/json' });
+        const blob = new Blob([payload], { type: 'text/plain' });
         const sent = navigator.sendBeacon(TRACKING_WEBHOOKS.signup, blob);
         console.log('[Tracking] Signup beacon sent:', sent);
     } catch (err) {

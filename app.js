@@ -1354,7 +1354,7 @@ async function handleSubmit() {
             total_media: countTotalMedia(),
             timestamp: new Date().toISOString()
         });
-        const trackingBlob = new Blob([trackingPayload], { type: 'application/json' });
+        const trackingBlob = new Blob([trackingPayload], { type: 'text/plain' });
         navigator.sendBeacon(CONFIG.tripSubmittedWebhook, trackingBlob);
 
         // Redirect to thank-you page (trailing slash prevents Traefik/Coolify internal redirect)
